@@ -20,3 +20,6 @@ index10.html  <-  pulsecore_pluto_9000_center_unit_high_contrast.html
 index11.html  <-  pluto9000_milky_site/index.html
 index12.html  <-  pluto9000_real_site/index.html (previous most recent)
 index.html   <-  pluto9000_neon_redesign (most recent: "late-night neon dairy" rebuild - prominent pulse, working 2-control demo, Milky fatigue arc, Bessie the cow)
+
+Alternate concept:
+index-pro.html  <-  "Midnight cream" professional variant (IBM Plex serif/sans/mono, charcoal + brass, restrained motion, dialed-back copy). Parallel alternative to index.html (neon).
