@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="620" viewBox="0 0 900 620">
+<style>
+.bg{fill:#0c1119}.card{fill:#131d2a;stroke:#243549;stroke-width:2}.soft{fill:#1b2737}.accent{fill:#19a8ff}.text{fill:#edf5ff;font-family:Arial,sans-serif}.muted{fill:#94aac0;font-family:Arial,sans-serif}.small{font-size:22px}.med{font-size:30px}.big{font-size:42px;font-weight:700}
+</style>
+<rect class="bg" width="900" height="620" rx="36"/>
+<rect class="card" x="28" y="28" width="844" height="564" rx="26"/>
+<text class="text big" x="60" y="92">Comfort cadence</text>
+<text class="muted med" x="60" y="130">Pressure • Vacuum Pull • Hold • Pulse • Release</text>
+<rect class="soft" x="60" y="164" width="780" height="170" rx="24"/>
+<line x1="100" y1="290" x2="800" y2="290" stroke="#243549" stroke-width="2"/>
+<line x1="100" y1="230" x2="800" y2="230" stroke="#243549" stroke-width="2"/>
+<path d="M100 280 C140 280, 150 250, 190 250 S250 190, 310 190 S380 238, 450 238 C500 238, 520 166, 590 166 S660 270, 720 270 S770 250, 800 220" fill="none" stroke="#19a8ff" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+<g>
+<rect x="84" y="366" width="136" height="70" rx="20" fill="#19a8ff"/><rect x="236" y="366" width="136" height="70" rx="20" fill="#1b2737"/><rect x="388" y="366" width="136" height="70" rx="20" fill="#1b2737"/><rect x="540" y="366" width="136" height="70" rx="20" fill="#1b2737"/><rect x="692" y="366" width="136" height="70" rx="20" fill="#1b2737"/>
+<text x="152" y="408" text-anchor="middle" style="fill:#081018;font-family:Arial,sans-serif;font-size:22px;font-weight:700">Pressure</text>
+<text x="304" y="408" text-anchor="middle" class="muted small">Vac Pull</text>
+<text x="456" y="408" text-anchor="middle" class="muted small">Hold</text>
+<text x="608" y="408" text-anchor="middle" class="muted small">Pulse</text>
+<text x="760" y="408" text-anchor="middle" class="muted small">Release</text>
+</g>
+<rect class="soft" x="60" y="470" width="240" height="84" rx="22"/><rect class="soft" x="330" y="470" width="240" height="84" rx="22"/><rect class="soft" x="600" y="470" width="240" height="84" rx="22"/>
+<text class="muted small" x="90" y="504">Primary suction</text><text class="text med" x="90" y="538">68%</text>
+<text class="muted small" x="360" y="504">Pulse strength</text><text class="text med" x="360" y="538">58%</text>
+<text class="muted small" x="630" y="504">Release</text><text class="text med" x="630" y="538">72%</text>
+</svg>

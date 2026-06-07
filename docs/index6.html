@@ -1,0 +1,2145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PulseCore Pluto 9000 — Premium Smart Milker</title>
+  <meta name="description" content="PulseCore presents Pluto 9000, a premium smart milker with multiple comfort controls, live rhythm visuals, and a release cycle designed to feel calm, smooth, and familiar." />
+  <style>
+    :root {
+      --cadence-speed: 3600ms;
+      --cadence-pulse-speed: 1400ms;
+      --cadence-ring-speed: 3200ms;
+      --bg: #070711;
+      --bg2: #0f0d1f;
+      --panel: rgba(22, 19, 48, 0.80);
+      --panel-solid: rgba(24, 22, 56, 0.96);
+      --line: rgba(181, 153, 255, 0.22);
+      --violet: #b99cff;
+      --ice: #7ee7ff;
+      --peach: #ffb27d;
+      --rose: #ff71bc;
+      --cream: #fff8ef;
+      --muted: #b7afce;
+      --shadow: 0 28px 90px rgba(88, 67, 248, 0.22);
+      --radius: 30px;
+      --stage-accent: var(--ice);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--cream);
+      background:
+        radial-gradient(circle at 10% 8%, rgba(255,113,188,.18), transparent 30%),
+        radial-gradient(circle at 82% 16%, rgba(126,231,255,.16), transparent 28%),
+        radial-gradient(circle at 50% 92%, rgba(185,156,255,.14), transparent 42%),
+        linear-gradient(180deg, #05050b 0%, #090913 45%, #040409 100%);
+      overflow-x: hidden;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: -2;
+    }
+
+    body::before {
+      background:
+        radial-gradient(circle, rgba(255,255,255,.62) 0 1px, transparent 1.6px) 18px 20px / 136px 136px,
+        radial-gradient(circle, rgba(126,231,255,.35) 0 1px, transparent 1.7px) 72px 90px / 210px 210px;
+      opacity: .28;
+      animation: stars 34s linear infinite;
+      mask-image: linear-gradient(to bottom, black, transparent 82%);
+    }
+
+    body::after {
+      z-index: -1;
+      background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,.04) 48%, transparent 76%);
+      transform: translateX(-110%);
+      animation: sheen 16s ease-in-out infinite;
+    }
+
+    @keyframes stars {
+      from { background-position: 18px 20px, 72px 90px; }
+      to { background-position: 18px 180px, 72px 260px; }
+    }
+
+    @keyframes sheen {
+      0%, 26% { transform: translateX(-110%) skewX(-14deg); }
+      56%, 100% { transform: translateX(110%) skewX(-14deg); }
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    .wrap {
+      width: min(1200px, calc(100% - 36px));
+      margin: 0 auto;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(7,7,17,.78);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(18px);
+    }
+
+    .nav {
+      height: 76px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      font-weight: 900;
+      font-size: 1.15rem;
+      letter-spacing: -.03em;
+    }
+
+    .brand small {
+      display: block;
+      color: var(--muted);
+      font-size: .68rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    .planet {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--ice), var(--violet) 54%, var(--rose));
+      position: relative;
+      box-shadow: 0 0 28px rgba(185,156,255,.44);
+      animation: planetGlow 5s ease-in-out infinite;
+    }
+
+    .planet::after {
+      content: "";
+      position: absolute;
+      left: -9px;
+      right: -9px;
+      top: 19px;
+      height: 7px;
+      border: 1px solid rgba(255,248,239,.82);
+      border-left-color: transparent;
+      border-right-color: transparent;
+      border-radius: 50%;
+      transform: rotate(-16deg);
+    }
+
+    @keyframes planetGlow {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(185,156,255,.34); }
+      50% { transform: scale(1.04); box-shadow: 0 0 34px rgba(126,231,255,.34); }
+    }
+
+    .navlinks {
+      display: flex;
+      gap: 22px;
+      color: var(--muted);
+      font-size: .92rem;
+    }
+
+    .navlinks a:hover { color: var(--ice); }
+
+    .btn {
+      display: inline-flex;
+      min-height: 48px;
+      padding: 0 22px;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      border: 1px solid rgba(126,231,255,.46);
+      background: linear-gradient(135deg, rgba(126,231,255,.18), rgba(185,156,255,.14));
+      color: var(--cream);
+      font-weight: 900;
+      box-shadow: 0 0 34px rgba(126,231,255,.10);
+      transition: transform .2s ease, background .2s ease, border-color .2s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      background: linear-gradient(135deg, rgba(126,231,255,.24), rgba(255,113,188,.18));
+      border-color: rgba(255,248,239,.72);
+    }
+
+    .btn.alt {
+      background: rgba(255,255,255,.04);
+      border-color: rgba(255,248,239,.18);
+      box-shadow: none;
+    }
+
+    .hero {
+      min-height: calc(100vh - 76px);
+      display: grid;
+      grid-template-columns: 1.02fr .98fr;
+      gap: 42px;
+      align-items: center;
+      padding: 72px 0 56px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      gap: 10px;
+      align-items: center;
+      border: 1px solid rgba(126,231,255,.28);
+      background: rgba(126,231,255,.08);
+      color: var(--ice);
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: .82rem;
+      letter-spacing: .08em;
+      font-weight: 900;
+      text-transform: uppercase;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--peach);
+      box-shadow: 0 0 18px var(--peach);
+      animation: pulseDot 1.7s ease-in-out infinite;
+    }
+
+    @keyframes pulseDot {
+      0%, 100% { opacity: .65; transform: scale(.88); }
+      50% { opacity: 1; transform: scale(1.3); }
+    }
+
+    h1 {
+      font-size: clamp(3.1rem, 7.6vw, 7.6rem);
+      line-height: .84;
+      letter-spacing: -.085em;
+      margin: 24px 0 20px;
+    }
+
+    h1 .grad {
+      display: inline-block;
+      background: linear-gradient(90deg, var(--ice), var(--violet), var(--rose), var(--peach));
+      background-size: 180% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      animation: titleFlow 8s ease-in-out infinite;
+    }
+
+    @keyframes titleFlow {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    .lead {
+      color: var(--muted);
+      font-size: clamp(1.06rem, 1.7vw, 1.22rem);
+      line-height: 1.68;
+      max-width: 660px;
+      margin: 0 0 28px;
+    }
+
+    .lead strong { color: var(--cream); }
+
+    .hero-actions {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 34px;
+    }
+
+    .highlights {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      max-width: 700px;
+    }
+
+    .highlight {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.04);
+      border-radius: 20px;
+      padding: 16px;
+      transition: transform .22s ease, border-color .22s ease;
+    }
+
+    .highlight:hover {
+      transform: translateY(-4px);
+      border-color: rgba(126,231,255,.38);
+    }
+
+    .highlight b {
+      display: block;
+      color: var(--ice);
+      font-size: 1.06rem;
+      margin-bottom: 6px;
+    }
+
+    .highlight span {
+      color: var(--muted);
+      line-height: 1.38;
+      font-size: .92rem;
+    }
+
+    .product-shell {
+      position: relative;
+      min-height: 620px;
+      display: grid;
+      place-items: center;
+    }
+
+    .orbit {
+      position: absolute;
+      width: min(96%, 560px);
+      aspect-ratio: 1;
+      border-radius: 50%;
+      border: 1px solid rgba(185,156,255,.20);
+      transform: rotate(-15deg);
+      animation: orbitFloat 14s ease-in-out infinite;
+    }
+
+    .orbit::before,
+    .orbit::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+    }
+
+    .orbit::before {
+      width: 14px;
+      height: 14px;
+      background: var(--peach);
+      top: 76px;
+      left: 88px;
+      box-shadow: 0 0 24px rgba(255,178,125,.46);
+    }
+
+    .orbit::after {
+      width: 9px;
+      height: 9px;
+      background: var(--ice);
+      right: 82px;
+      bottom: 102px;
+      box-shadow: 0 0 20px rgba(126,231,255,.42);
+    }
+
+    @keyframes orbitFloat {
+      0%, 100% { transform: rotate(-15deg) scale(1); opacity: .84; }
+      50% { transform: rotate(-9deg) scale(1.035); opacity: 1; }
+    }
+
+    .machine {
+      position: relative;
+      width: min(100%, 486px);
+      padding: 24px;
+      border-radius: 38px;
+      border: 1px solid rgba(255,248,239,.14);
+      background:
+        linear-gradient(145deg, rgba(255,255,255,.11), rgba(255,255,255,.03)),
+        linear-gradient(180deg, #221f43, #100f23);
+      box-shadow: var(--shadow), 0 50px 110px rgba(0,0,0,.36);
+      animation: floatMachine 6.8s ease-in-out infinite;
+    }
+
+    @keyframes floatMachine {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    .machine::before {
+      content: "PLUTO 9000";
+      position: absolute;
+      right: 28px;
+      top: 20px;
+      font-size: .72rem;
+      letter-spacing: .18em;
+      font-weight: 900;
+      color: rgba(255,248,239,.62);
+    }
+
+    .screen {
+      margin-top: 24px;
+      border-radius: 26px;
+      background: #060510;
+      border: 1px solid rgba(126,231,255,.32);
+      padding: 16px;
+      box-shadow: inset 0 0 26px rgba(126,231,255,.08);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .screen::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(120deg, transparent, rgba(255,255,255,.06), transparent);
+      transform: translateX(-110%);
+      animation: screenSweep 5.8s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    @keyframes screenSweep {
+      0%, 48% { transform: translateX(-110%); }
+      76%, 100% { transform: translateX(110%); }
+    }
+
+    .screen-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--ice);
+      font-size: .75rem;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      padding-bottom: 12px;
+      margin-bottom: 14px;
+    }
+
+    .readouts {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .readout {
+      border: 1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.05);
+      border-radius: 18px;
+      padding: 14px;
+    }
+
+    .readout span {
+      display: block;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      font-size: .72rem;
+      margin-bottom: 6px;
+    }
+
+    .readout b {
+      font-size: 1.95rem;
+    }
+
+    .readout:nth-child(1) b { color: var(--ice); }
+    .readout:nth-child(2) b { color: var(--peach); }
+
+    .hero-wave {
+      position: relative;
+      height: 128px;
+      border-radius: 18px;
+      background:
+        linear-gradient(rgba(126,231,255,.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(126,231,255,.07) 1px, transparent 1px),
+        rgba(126,231,255,.035);
+      background-size: 100% 32px, 32px 100%, auto;
+      border: 1px solid rgba(126,231,255,.18);
+      overflow: hidden;
+    }
+
+    .hero-wave svg,
+    .tiny-graph svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .draw-wave {
+      stroke-dasharray: 640;
+      stroke-dashoffset: 640;
+      animation: draw 4.8s ease-in-out infinite;
+    }
+
+    @keyframes draw {
+      0% { stroke-dashoffset: 640; opacity: .55; }
+      42%, 72% { stroke-dashoffset: 0; opacity: 1; }
+      100% { stroke-dashoffset: -640; opacity: .55; }
+    }
+
+    .screen-tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 9px;
+      margin-top: 12px;
+    }
+
+    .screen-tabs div {
+      border: 1px solid rgba(255,248,239,.12);
+      background: rgba(255,255,255,.05);
+      border-radius: 14px;
+      padding: 11px 8px;
+      text-align: center;
+      color: var(--muted);
+      font-size: .75rem;
+      transition: transform .18s ease, color .18s ease;
+    }
+
+    .screen-tabs div:hover {
+      transform: translateY(-2px);
+      color: var(--cream);
+    }
+
+    section { padding: 66px 0; }
+
+    .section-head {
+      max-width: 880px;
+      margin-bottom: 30px;
+    }
+
+    h2 {
+      margin: 0 0 16px;
+      font-size: clamp(2.1rem, 4.4vw, 4.15rem);
+      line-height: .95;
+      letter-spacing: -.06em;
+    }
+
+    .section-head p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 1.08rem;
+      line-height: 1.7;
+    }
+
+    .screens-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .shot {
+      border: 1px solid rgba(255,248,239,.12);
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
+      border-radius: 28px;
+      padding: 14px;
+      box-shadow: 0 22px 60px rgba(0,0,0,.23);
+      transition: transform .24s ease, border-color .24s ease;
+    }
+
+    .shot:hover {
+      transform: translateY(-6px);
+      border-color: rgba(126,231,255,.34);
+    }
+
+    .shot-screen {
+      min-height: 260px;
+      background: #050510;
+      border: 1px solid rgba(126,231,255,.18);
+      border-radius: 22px;
+      padding: 14px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .shot-title {
+      display: flex;
+      justify-content: space-between;
+      color: var(--ice);
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: .09em;
+      margin-bottom: 14px;
+    }
+
+    .metric {
+      border: 1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.05);
+      border-radius: 16px;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+
+    .metric small {
+      display: block;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      font-size: .68rem;
+      margin-bottom: 5px;
+    }
+
+    .metric b { font-size: 1.55rem; }
+
+    .slider {
+      height: 9px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.12);
+      overflow: hidden;
+      margin-top: 10px;
+    }
+
+    .slider span {
+      display: block;
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--ice), var(--violet), var(--rose));
+      animation: sliderGlow 3.2s ease-in-out infinite;
+    }
+
+    @keyframes sliderGlow {
+      0%, 100% { filter: brightness(1); }
+      50% { filter: brightness(1.25); }
+    }
+
+    .tiny-graph {
+      position: relative;
+      height: 100px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.08);
+      background:
+        linear-gradient(rgba(255,255,255,.055) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.055) 1px, transparent 1px),
+        rgba(255,255,255,.035);
+      background-size: 100% 25px, 25px 100%, auto;
+      overflow: hidden;
+    }
+
+    .diag-list { display: grid; gap: 8px; }
+
+    .diag {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      color: var(--muted);
+      padding: 10px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.045);
+    }
+
+    .pill {
+      border-radius: 999px;
+      padding: 5px 9px;
+      background: var(--peach);
+      color: var(--bg);
+      font-weight: 900;
+      font-size: .68rem;
+    }
+
+    .shot-caption {
+      padding: 12px 4px 0;
+      color: var(--muted);
+      font-size: .92rem;
+      line-height: 1.56;
+    }
+
+    .cadence-shell {
+      border: 1px solid var(--line);
+      border-radius: 34px;
+      background:
+        radial-gradient(circle at 15% 0%, rgba(126,231,255,.12), transparent 36%),
+        linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.02));
+      padding: 26px;
+      box-shadow: 0 28px 80px rgba(0,0,0,.24);
+    }
+
+    .cadence-grid {
+      display: grid;
+      grid-template-columns: 1.08fr .92fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .cycle-bar {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .cycle-step {
+      border: 1px solid rgba(255,248,239,.12);
+      background: rgba(255,255,255,.045);
+      border-radius: 18px;
+      padding: 14px;
+      transition: transform .28s ease, border-color .28s ease, background .28s ease, box-shadow .28s ease;
+      cursor: pointer;
+    }
+
+    .cycle-step span {
+      display: block;
+      font-size: .72rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .cycle-step b {
+      display: block;
+      font-size: 1rem;
+      color: var(--cream);
+    }
+
+    .cycle-step.active {
+      transform: translateY(-4px);
+      border-color: var(--stage-accent);
+      background: rgba(255,255,255,.07);
+      box-shadow: 0 0 0 1px rgba(255,255,255,.04), 0 0 28px rgba(126,231,255,.10);
+    }
+
+    .cycle-visual {
+      border: 1px solid rgba(255,248,239,.12);
+      border-radius: 28px;
+      background: rgba(7,7,17,.44);
+      padding: 22px;
+      min-height: 440px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .phase-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .phase-header h3 {
+      margin: 0;
+      font-size: clamp(1.65rem, 2.4vw, 2.45rem);
+      letter-spacing: -.04em;
+    }
+
+    .phase-header p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+      max-width: 470px;
+    }
+
+    .cycle-track {
+      position: relative;
+      height: 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.08);
+      overflow: hidden;
+      margin-bottom: 22px;
+    }
+
+    .cycle-progress {
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 20%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--ice), var(--violet), var(--peach));
+      box-shadow: 0 0 24px rgba(126,231,255,.26);
+      transition: width calc(var(--cadence-speed) * .18) ease, background calc(var(--cadence-speed) * .18) ease;
+    }
+
+    .cycle-dots {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      margin-bottom: 24px;
+    }
+
+    .cycle-dots div {
+      display: grid;
+      justify-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: .76rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .cycle-dots i {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.16);
+      border: 1px solid rgba(255,255,255,.16);
+      transition: transform .4s ease, background .4s ease, box-shadow .4s ease, border-color .4s ease;
+    }
+
+    .cycle-dots .on i {
+      background: var(--stage-accent);
+      border-color: var(--stage-accent);
+      box-shadow: 0 0 18px rgba(126,231,255,.32);
+      transform: scale(1.18);
+    }
+
+    .motion-lab {
+      display: grid;
+      grid-template-columns: .92fr 1.08fr;
+      gap: 18px;
+      align-items: center;
+    }
+
+    .chamber {
+      border: 1px solid rgba(255,248,239,.12);
+      border-radius: 28px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      height: 250px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .chamber::before,
+    .chamber::after {
+      content: "";
+      position: absolute;
+      top: 28px;
+      bottom: 28px;
+      width: 56px;
+      border-radius: 26px;
+      background: linear-gradient(180deg, rgba(126,231,255,.16), rgba(255,255,255,.04));
+      border: 1px solid rgba(126,231,255,.18);
+      transition: transform calc(var(--cadence-speed) * .16) ease, width calc(var(--cadence-speed) * .16) ease, opacity calc(var(--cadence-speed) * .16) ease, background calc(var(--cadence-speed) * .16) ease;
+    }
+
+    .chamber::before { left: 22px; transform: translateX(0); }
+    .chamber::after { right: 22px; transform: translateX(0); }
+
+    .liner {
+      position: absolute;
+      left: 50%;
+      top: 26px;
+      bottom: 26px;
+      width: 84px;
+      transform: translateX(-50%);
+      border-radius: 38px;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.22), rgba(255,255,255,.06)),
+        linear-gradient(180deg, rgba(126,231,255,.12), rgba(255,255,255,.04));
+      border: 1px solid rgba(255,248,239,.16);
+      box-shadow: inset 0 0 24px rgba(126,231,255,.06);
+      transition: transform calc(var(--cadence-speed) * .16) ease, width calc(var(--cadence-speed) * .16) ease, box-shadow calc(var(--cadence-speed) * .16) ease;
+    }
+
+    .liner::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 20px;
+      width: 10px;
+      height: calc(100% - 40px);
+      transform: translateX(-50%);
+      border-radius: 999px;
+      background: linear-gradient(180deg, rgba(126,231,255,.25), rgba(255,178,125,.28));
+      opacity: .85;
+    }
+
+    .vacuum-rings {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      pointer-events: none;
+    }
+
+    .ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 1px solid rgba(126,231,255,.24);
+      opacity: 0;
+      transform: scale(.6);
+    }
+
+    .ring.one { width: 90px; height: 90px; }
+    .ring.two { width: 140px; height: 140px; }
+    .ring.three { width: 200px; height: 200px; }
+
+    .chamber.active-pressure .ring,
+    .chamber.active-suck .ring,
+    .chamber.active-hold .ring,
+    .chamber.active-pulse .ring,
+    .chamber.active-release .ring {
+      animation: ringExpand var(--cadence-ring-speed) ease-out infinite;
+    }
+
+    .chamber.active-pressure .ring.two { animation-delay: .22s; }
+    .chamber.active-pressure .ring.three { animation-delay: .44s; }
+    .chamber.active-suck .ring.two { animation-delay: .16s; }
+    .chamber.active-suck .ring.three { animation-delay: .32s; }
+    .chamber.active-pulse .ring { animation-duration: var(--cadence-pulse-speed); }
+    .chamber.active-pulse .ring.two { animation-delay: .12s; }
+    .chamber.active-pulse .ring.three { animation-delay: .24s; }
+
+    @keyframes ringExpand {
+      0% { opacity: .75; transform: scale(.62); }
+      100% { opacity: 0; transform: scale(1.28); }
+    }
+
+    .wave-area {
+      display: grid;
+      gap: 14px;
+    }
+
+    .cadence-labels {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+    }
+
+    .cadence-labels div {
+      border: 1px solid rgba(255,248,239,.10);
+      background: rgba(255,255,255,.035);
+      border-radius: 16px;
+      padding: 10px 8px;
+      text-align: center;
+      color: var(--muted);
+      font-size: .77rem;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      transition: border-color .35s ease, color .35s ease, transform .35s ease;
+    }
+
+    .cadence-labels .active {
+      border-color: var(--stage-accent);
+      color: var(--cream);
+      transform: translateY(-2px);
+    }
+
+    .comfort-wave-box {
+      position: relative;
+      height: 180px;
+      border: 1px solid rgba(255,248,239,.10);
+      border-radius: 26px;
+      overflow: hidden;
+      background:
+        linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px),
+        rgba(255,255,255,.03);
+      background-size: 100% 36px, 36px 100%, auto;
+    }
+
+    .comfort-wave-box svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    .wave-glow {
+      filter: drop-shadow(0 0 10px rgba(126,231,255,.24));
+      transition: stroke calc(var(--cadence-speed) * .15) ease;
+    }
+
+    .comfort-copy-box {
+      border: 1px solid rgba(255,248,239,.10);
+      border-radius: 22px;
+      background: rgba(255,255,255,.035);
+      padding: 18px;
+    }
+
+    .comfort-copy-box b {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 1.08rem;
+      color: var(--cream);
+    }
+
+    .comfort-copy-box p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .motion-metrics {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .motion-metric {
+      border: 1px solid rgba(255,248,239,.10);
+      background: rgba(255,255,255,.035);
+      border-radius: 18px;
+      padding: 14px;
+    }
+
+    .motion-metric span {
+      display: block;
+      font-size: .74rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .motion-metric b {
+      display: block;
+      font-size: 1.26rem;
+      color: var(--stage-accent);
+      transition: color .45s ease;
+    }
+
+    .chamber.active-pressure::before,
+    .chamber.active-pressure::after {
+      width: 64px;
+      opacity: .9;
+    }
+
+    .chamber.active-pressure .liner {
+      width: 82px;
+      box-shadow: inset 0 0 28px rgba(126,231,255,.08), 0 0 0 1px rgba(255,255,255,.03);
+    }
+
+    .chamber.active-suck::before,
+    .chamber.active-suck::after {
+      width: 72px;
+    }
+
+    .chamber.active-suck::before { transform: translateX(12px); }
+    .chamber.active-suck::after { transform: translateX(-12px); }
+
+    .chamber.active-suck .liner {
+      width: 72px;
+      box-shadow: inset 0 0 38px rgba(126,231,255,.10), 0 0 32px rgba(126,231,255,.08);
+    }
+
+    .chamber.active-hold::before,
+    .chamber.active-hold::after {
+      width: 70px;
+    }
+
+    .chamber.active-hold::before { transform: translateX(8px); }
+    .chamber.active-hold::after { transform: translateX(-8px); }
+
+    .chamber.active-hold .liner {
+      width: 74px;
+      box-shadow: inset 0 0 34px rgba(255,248,239,.08);
+    }
+
+    .chamber.active-pulse::before,
+    .chamber.active-pulse::after {
+      animation: pulseWalls var(--cadence-pulse-speed) ease-in-out infinite;
+    }
+
+    .chamber.active-pulse .liner {
+      animation: pulseLiner var(--cadence-pulse-speed) ease-in-out infinite;
+    }
+
+    @keyframes pulseWalls {
+      0%, 100% { width: 62px; transform: translateX(0); }
+      50% { width: 72px; }
+    }
+
+    @keyframes pulseLiner {
+      0%, 100% { width: 80px; }
+      50% { width: 68px; box-shadow: inset 0 0 32px rgba(126,231,255,.10); }
+    }
+
+    .chamber.active-release::before,
+    .chamber.active-release::after {
+      width: 50px;
+      opacity: .72;
+    }
+
+    .chamber.active-release .liner {
+      width: 92px;
+      box-shadow: inset 0 0 18px rgba(255,178,125,.08), 0 0 42px rgba(255,178,125,.08);
+    }
+
+
+    .cadence-controls {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 14px;
+      align-items: center;
+      border: 1px solid rgba(255,248,239,.10);
+      background: rgba(255,255,255,.035);
+      border-radius: 22px;
+      padding: 14px;
+      margin-bottom: 18px;
+    }
+
+    .cadence-button {
+      min-height: 44px;
+      border: 1px solid rgba(126,231,255,.36);
+      background: linear-gradient(135deg, rgba(126,231,255,.16), rgba(185,156,255,.12));
+      color: var(--cream);
+      border-radius: 999px;
+      padding: 0 18px;
+      font-weight: 900;
+      cursor: pointer;
+      transition: transform .18s ease, border-color .18s ease, background .18s ease;
+    }
+
+    .cadence-button:hover {
+      transform: translateY(-2px);
+      border-color: rgba(255,248,239,.6);
+      background: linear-gradient(135deg, rgba(126,231,255,.24), rgba(255,113,188,.14));
+    }
+
+    .speed-control {
+      display: grid;
+      gap: 8px;
+    }
+
+    .speed-control label {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--muted);
+      font-size: .78rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .speed-control label b {
+      color: var(--cream);
+      font-size: .82rem;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+
+    .speed-control input {
+      width: 100%;
+      accent-color: var(--stage-accent);
+      cursor: pointer;
+    }
+
+    .speed-caption {
+      color: var(--muted);
+      font-size: .86rem;
+      line-height: 1.4;
+      text-align: right;
+    }
+
+    .cadence-paused .cycle-progress,
+    .cadence-paused .ring,
+    .cadence-paused .chamber.active-pulse::before,
+    .cadence-paused .chamber.active-pulse::after,
+    .cadence-paused .chamber.active-pulse .liner {
+      animation-play-state: paused !important;
+    }
+
+    .notes-grid {
+      display: grid;
+      grid-template-columns: .95fr 1.05fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .note-panel {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background:
+        radial-gradient(circle at 15% 0%, rgba(126,231,255,.10), transparent 34%),
+        var(--panel-solid);
+      padding: 30px;
+    }
+
+    .note-panel h3 {
+      margin: 0 0 14px;
+      font-size: clamp(1.65rem, 3vw, 2.45rem);
+      line-height: 1.02;
+      letter-spacing: -.045em;
+    }
+
+    .note-panel p {
+      color: var(--muted);
+      line-height: 1.72;
+      font-size: 1.04rem;
+    }
+
+    .promise-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .promise {
+      display: grid;
+      grid-template-columns: 44px 1fr;
+      gap: 12px;
+      align-items: start;
+      border: 1px solid rgba(255,248,239,.10);
+      background: rgba(255,255,255,.045);
+      border-radius: 18px;
+      padding: 14px;
+      transition: transform .22s ease, border-color .22s ease;
+    }
+
+    .promise:hover {
+      transform: translateX(4px);
+      border-color: rgba(255,178,125,.30);
+    }
+
+    .promise-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      color: var(--bg);
+      background: linear-gradient(135deg, var(--ice), var(--peach));
+    }
+
+    .promise b {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--cream);
+    }
+
+    .promise span {
+      color: var(--muted);
+      line-height: 1.5;
+      font-size: .95rem;
+    }
+
+    .story-orbit {
+      position: relative;
+      border: 1px solid rgba(255,248,239,.12);
+      border-radius: 34px;
+      min-height: 480px;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 24% 30%, rgba(126,231,255,.16), transparent 24%),
+        radial-gradient(circle at 74% 56%, rgba(255,113,188,.14), transparent 25%),
+        linear-gradient(145deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
+      box-shadow: 0 28px 78px rgba(0,0,0,.30);
+      padding: 24px;
+    }
+
+    .story-card {
+      position: absolute;
+      width: 220px;
+      border: 1px solid rgba(255,248,239,.14);
+      background: rgba(7,7,17,.58);
+      backdrop-filter: blur(12px);
+      border-radius: 22px;
+      padding: 18px;
+      box-shadow: 0 18px 48px rgba(0,0,0,.22);
+    }
+
+    .story-card b {
+      display: block;
+      color: var(--ice);
+      margin-bottom: 8px;
+      font-size: 1.02rem;
+    }
+
+    .story-card span {
+      color: var(--muted);
+      line-height: 1.45;
+      font-size: .9rem;
+    }
+
+    .story-card:nth-child(1) { top: 32px; left: 26px; animation: floatA 7s ease-in-out infinite; }
+    .story-card:nth-child(2) { top: 120px; right: 30px; animation: floatB 8s ease-in-out infinite; }
+    .story-card:nth-child(3) { bottom: 118px; left: 52px; animation: floatC 7.4s ease-in-out infinite; }
+    .story-card:nth-child(4) { bottom: 36px; right: 54px; animation: floatA 8.5s ease-in-out infinite; }
+
+    .core {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      background: radial-gradient(circle at 35% 25%, var(--cream), var(--ice) 24%, var(--violet) 56%, var(--rose));
+      box-shadow: 0 0 70px rgba(185,156,255,.26);
+      animation: corePulse 5.2s ease-in-out infinite;
+    }
+
+    .core::after {
+      content: "";
+      position: absolute;
+      left: -42px;
+      right: -42px;
+      top: 70px;
+      height: 12px;
+      border: 2px solid rgba(255,248,239,.70);
+      border-left-color: transparent;
+      border-right-color: transparent;
+      border-radius: 50%;
+      transform: rotate(-15deg);
+    }
+
+    @keyframes floatA {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-9px); }
+    }
+
+    @keyframes floatB {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(10px); }
+    }
+
+    @keyframes floatC {
+      0%, 100% { transform: translateX(0); }
+      50% { transform: translateX(8px); }
+    }
+
+    @keyframes corePulse {
+      0%, 100% { transform: translate(-50%, -50%) scale(1); filter: brightness(1); }
+      50% { transform: translate(-50%, -50%) scale(1.045); filter: brightness(1.1); }
+    }
+
+    .solenoid-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+
+    .solenoid {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      padding: 22px;
+      transition: transform .22s ease, border-color .22s ease, background .22s ease;
+    }
+
+    .solenoid:hover {
+      transform: translateY(-5px);
+      border-color: rgba(255,178,125,.42);
+      background: rgba(30,25,65,.88);
+    }
+
+    .solenoid em {
+      font-style: normal;
+      display: inline-grid;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 14px;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, var(--ice), var(--peach));
+      color: var(--bg);
+      font-weight: 900;
+    }
+
+    .solenoid h3 {
+      margin: 0 0 10px;
+      font-size: 1.1rem;
+    }
+
+    .solenoid p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.58;
+      font-size: .96rem;
+    }
+
+    .comfort-grid {
+      display: grid;
+      grid-template-columns: .92fr 1.08fr;
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    .comfort-panel,
+    .quote-panel {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel-solid);
+      padding: 28px;
+    }
+
+    .comfort-panel p,
+    .quote-panel p {
+      color: var(--muted);
+      line-height: 1.72;
+      font-size: 1.04rem;
+    }
+
+    .comfort-panel p strong { color: var(--cream); }
+
+    .quote-panel {
+      display: grid;
+      align-content: center;
+      background:
+        radial-gradient(circle at top right, rgba(255,178,125,.14), transparent 44%),
+        var(--panel-solid);
+    }
+
+    .quote-panel blockquote {
+      margin: 0;
+      font-size: clamp(1.7rem, 3.4vw, 3.15rem);
+      line-height: 1.02;
+      letter-spacing: -.055em;
+      font-weight: 900;
+    }
+
+    .quote-panel blockquote span { color: var(--peach); }
+
+    .operator-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .operator {
+      border: 1px solid rgba(255,248,239,.12);
+      border-radius: 28px;
+      background: linear-gradient(180deg, rgba(255,255,255,.075), rgba(255,255,255,.025));
+      padding: 24px;
+      min-height: 250px;
+      position: relative;
+      overflow: hidden;
+      transition: transform .22s ease, border-color .22s ease;
+    }
+
+    .operator:hover {
+      transform: translateY(-5px);
+      border-color: rgba(126,231,255,.34);
+    }
+
+    .operator::before {
+      content: "";
+      position: absolute;
+      width: 130px;
+      height: 130px;
+      right: -50px;
+      top: -50px;
+      border-radius: 50%;
+      background: rgba(126,231,255,.09);
+    }
+
+    .operator h3 {
+      margin: 0 0 12px;
+      font-size: 1.28rem;
+    }
+
+    .operator p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.62;
+    }
+
+    .final {
+      border: 1px solid var(--line);
+      border-radius: 38px;
+      text-align: center;
+      padding: 86px 24px;
+      background:
+        radial-gradient(circle at 50% 0%, rgba(126,231,255,.18), transparent 42%),
+        linear-gradient(135deg, rgba(255,113,188,.10), rgba(185,156,255,.08));
+      box-shadow: var(--shadow);
+    }
+
+    .final h2 { margin-bottom: 16px; }
+
+    .final p {
+      max-width: 840px;
+      margin: 0 auto 28px;
+      color: var(--muted);
+      line-height: 1.72;
+      font-size: 1.08rem;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(18px);
+      transition: opacity .7s ease, transform .7s ease;
+    }
+
+    .reveal.in {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    footer {
+      border-top: 1px solid var(--line);
+      padding: 30px 0;
+      color: var(--muted);
+      font-size: .92rem;
+    }
+
+    .foot {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    @media (max-width: 1020px) {
+      .hero,
+      .cadence-grid,
+      .motion-lab,
+      .notes-grid,
+      .comfort-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .screens-grid { grid-template-columns: 1fr; }
+      .solenoid-grid { grid-template-columns: repeat(2, 1fr); }
+      .operator-grid { grid-template-columns: repeat(2, 1fr); }
+      .navlinks { display: none; }
+      .product-shell { min-height: auto; }
+    }
+
+    @media (max-width: 760px) {
+      .cadence-controls,
+      .cadence-controls,
+      .cycle-bar,
+      .cadence-labels,
+      .cycle-dots,
+      .motion-metrics {
+        grid-template-columns: 1fr;
+      }
+
+      .speed-caption {
+        text-align: left;
+      }
+
+      .story-card {
+        position: relative;
+        inset: auto !important;
+        width: auto;
+        animation: none !important;
+        margin-bottom: 12px;
+      }
+
+      .core {
+        position: relative;
+        left: auto;
+        top: auto;
+        transform: none;
+        margin: 12px auto 20px;
+      }
+
+      .core::after { display: none; }
+      .story-orbit { min-height: auto; }
+    }
+
+    @media (max-width: 620px) {
+      .highlights,
+      .readouts,
+      .solenoid-grid,
+      .operator-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-actions .btn { width: 100%; }
+      h1 { font-size: clamp(3rem, 18vw, 5.2rem); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
+        scroll-behavior: auto !important;
+      }
+
+      .reveal {
+        opacity: 1;
+        transform: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap nav">
+      <a href="#" class="brand" aria-label="PulseCore home">
+        <span class="planet" aria-hidden="true"></span>
+        <span>PulseCore <small>Home of Pluto 9000</small></span>
+      </a>
+      <nav class="navlinks" aria-label="Page navigation">
+        <a href="#software">Software</a>
+        <a href="#cadence">Cadence</a>
+        <a href="#controls">Controls</a>
+        <a href="#comfort">Comfort</a>
+      </nav>
+      <a class="btn" href="#contact">Explore Pluto</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="wrap hero">
+      <div>
+        <div class="eyebrow"><span class="dot"></span> Premium smart milking control</div>
+        <h1>The <span class="grad">Pluto 9000</span></h1>
+        <p class="lead">
+          Built by <strong>PulseCore</strong>, the Pluto 9000 is a premium milker designed to turn the milking session into a smoother, more comfortable rhythm. With multiple controls for suction, pulse, hold, and release, it gives the operator a refined way to shape the full experience instead of simply running a machine.
+        </p>
+        <div class="hero-actions">
+          <a class="btn" href="#cadence">See the motion</a>
+          <a class="btn alt" href="#software">See the software</a>
+        </div>
+        <div class="highlights">
+          <div class="highlight"><b>Second to None</b><span>Multiple controls create a level of feel and refinement that ordinary milkers cannot match.</span></div>
+          <div class="highlight"><b>Rhythm You Recognize</b><span>The motion feels steady and familiar, built around the cadence farmers already know.</span></div>
+          <div class="highlight"><b>Release That Matters</b><span>The signature let-go moment helps the session feel calmer, softer, and more natural.</span></div>
+        </div>
+      </div>
+
+      <div class="product-shell">
+        <div class="orbit" aria-hidden="true"></div>
+        <div class="machine">
+          <div class="screen" aria-label="Pluto 9000 main controller screen mockup">
+            <div class="screen-head">
+              <span>PulseCore OS</span>
+              <span>Comfort Mode</span>
+            </div>
+            <div class="readouts">
+              <div class="readout">
+                <span>Suction</span>
+                <b>68%</b>
+              </div>
+              <div class="readout">
+                <span>Pulse</span>
+                <b>46</b>
+              </div>
+            </div>
+            <div class="hero-wave">
+              <svg viewBox="0 0 520 128" preserveAspectRatio="none" aria-hidden="true">
+                <path class="draw-wave" d="M0,92 C48,92 44,54 86,54 C130,54 125,92 172,92 C218,92 214,54 260,54 C306,54 302,92 348,92 C394,92 390,54 436,54 C480,54 476,92 520,92" fill="none" stroke="rgba(126,231,255,.92)" stroke-width="4"/>
+                <path d="M0,98 C90,102 130,76 180,76 C250,76 260,110 330,96 C405,80 432,72 520,82" fill="none" stroke="rgba(255,178,125,.92)" stroke-width="3"/>
+              </svg>
+            </div>
+            <div class="screen-tabs">
+              <div>Vacuum</div>
+              <div>Pulse</div>
+              <div>Release</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="wrap reveal" id="software">
+      <div class="section-head">
+        <h2>Software that makes control feel effortless.</h2>
+        <p>
+          Pluto 9000 puts the full session on display. The interface is built around clear values, live movement, and comfort-focused controls that help the operator read the machine at a glance.
+        </p>
+      </div>
+
+      <div class="screens-grid">
+        <article class="shot">
+          <div class="shot-screen">
+            <div class="shot-title"><span>Main Control</span><span>Live</span></div>
+            <div class="metric">
+              <small>Vacuum Strength</small>
+              <b>68%</b>
+              <div class="slider"><span style="width:68%"></span></div>
+            </div>
+            <div class="metric">
+              <small>Pulse Rate</small>
+              <b>46 PPM</b>
+              <div class="slider"><span style="width:46%"></span></div>
+            </div>
+            <div class="tiny-graph">
+              <svg viewBox="0 0 420 100" preserveAspectRatio="none" aria-hidden="true">
+                <path class="draw-wave" d="M0,76 C40,74 62,52 100,50 C152,48 170,35 220,36 C278,38 285,62 340,58 C378,55 388,48 420,46" fill="none" stroke="rgba(126,231,255,.92)" stroke-width="4"/>
+              </svg>
+            </div>
+          </div>
+          <div class="shot-caption">The main screen keeps suction and pulse rhythm front and center, showing the session as it happens.</div>
+        </article>
+
+        <article class="shot">
+          <div class="shot-screen">
+            <div class="shot-title"><span>Comfort Release</span><span>Soft</span></div>
+            <div class="metric">
+              <small>Release Feel</small>
+              <b>Cloud Soft</b>
+              <div class="slider"><span style="width:82%"></span></div>
+            </div>
+            <div class="metric">
+              <small>Rest Window</small>
+              <b>Balanced</b>
+              <div class="slider"><span style="width:58%"></span></div>
+            </div>
+            <div class="tiny-graph">
+              <svg viewBox="0 0 420 100" preserveAspectRatio="none" aria-hidden="true">
+                <path class="draw-wave" d="M0,66 C34,68 44,68 68,66 C92,64 90,35 126,35 C162,35 160,66 196,66 C232,66 230,35 266,35 C302,35 300,66 336,66 C372,66 378,52 420,50" fill="none" stroke="rgba(255,178,125,.92)" stroke-width="4"/>
+              </svg>
+            </div>
+          </div>
+          <div class="shot-caption">The comfort release screen highlights the smoother reset that gives Pluto 9000 its premium feel.</div>
+        </article>
+
+        <article class="shot">
+          <div class="shot-screen">
+            <div class="shot-title"><span>Service Check</span><span>Ready</span></div>
+            <div class="diag-list">
+              <div class="diag"><span>Vacuum Valve</span><span class="pill">Test</span></div>
+              <div class="diag"><span>Pulse Valve</span><span class="pill">Test</span></div>
+              <div class="diag"><span>Comfort Valve</span><span class="pill">Test</span></div>
+              <div class="diag"><span>Release Valve</span><span class="pill">Test</span></div>
+              <div class="diag"><span>Pump Control</span><span class="pill">Test</span></div>
+              <div class="diag"><span>Brightness</span><span class="pill">Set</span></div>
+            </div>
+          </div>
+          <div class="shot-caption">Each major function can be checked directly, helping the system feel trustworthy and easy to maintain.</div>
+        </article>
+      </div>
+    </section>
+
+    <section class="wrap reveal" id="cadence">
+      <div class="section-head">
+        <h2>The comfort cadence.</h2>
+        <p>
+          Pluto 9000 is built around the rhythm that matters most: pressure, suck, hold, pulse, and release. The motion is smooth, deliberate, and quietly familiar, echoing the cycle that experienced farmers already understand by feel.
+        </p>
+      </div>
+
+      <div class="cadence-shell" id="cadenceShell">
+        <div class="cadence-controls" aria-label="Cadence playback controls">
+          <button class="cadence-button" id="cadenceToggle" type="button">Pause Cadence</button>
+          <div class="speed-control">
+            <label for="cadenceSpeed">Cadence Speed <b id="speedReadout">Calm / 3.6s per stage</b></label>
+            <input id="cadenceSpeed" type="range" min="1" max="5" step="1" value="3" />
+          </div>
+          <div class="speed-caption" id="speedCaption">A slow, reassuring cycle.</div>
+        </div>
+
+        <div class="cycle-bar">
+          <div class="cycle-step active" data-step="0"><span>Stage 1</span><b>Pressure</b></div>
+          <div class="cycle-step" data-step="1"><span>Stage 2</span><b>Suck</b></div>
+          <div class="cycle-step" data-step="2"><span>Stage 3</span><b>Hold</b></div>
+          <div class="cycle-step" data-step="3"><span>Stage 4</span><b>Pulse</b></div>
+          <div class="cycle-step" data-step="4"><span>Stage 5</span><b>Release</b></div>
+        </div>
+
+        <div class="cadence-grid">
+          <div class="cycle-visual">
+            <div class="phase-header">
+              <div>
+                <h3 id="phaseTitle">Pressure</h3>
+                <p id="phaseCopy">The cycle begins with a confident build in pressure, setting a steady foundation for the motion that follows.</p>
+              </div>
+            </div>
+
+            <div class="cycle-track" aria-hidden="true">
+              <div class="cycle-progress" id="cycleProgress"></div>
+            </div>
+
+            <div class="cycle-dots" id="cycleDots">
+              <div class="on"><i></i><span>Pressure</span></div>
+              <div><i></i><span>Suck</span></div>
+              <div><i></i><span>Hold</span></div>
+              <div><i></i><span>Pulse</span></div>
+              <div><i></i><span>Release</span></div>
+            </div>
+
+            <div class="motion-lab">
+              <div class="chamber active-pressure" id="chamberAnim" aria-label="Milking cadence chamber animation">
+                <div class="liner"></div>
+                <div class="vacuum-rings">
+                  <div class="ring one"></div>
+                  <div class="ring two"></div>
+                  <div class="ring three"></div>
+                </div>
+              </div>
+
+              <div class="wave-area">
+                <div class="cadence-labels" id="cadenceLabels">
+                  <div class="active">Pressure</div>
+                  <div>Suck</div>
+                  <div>Hold</div>
+                  <div>Pulse</div>
+                  <div>Release</div>
+                </div>
+
+                <div class="comfort-wave-box">
+                  <svg viewBox="0 0 600 180" preserveAspectRatio="none" aria-hidden="true">
+                    <path id="cadenceWave" class="wave-glow" d="M0,116 C44,116 58,70 98,70 C146,70 146,116 196,116 C246,116 246,70 296,70 C346,70 346,116 396,116 C446,116 446,70 496,70 C544,70 554,116 600,116" fill="none" stroke="rgba(126,231,255,.92)" stroke-width="5"/>
+                  </svg>
+                </div>
+
+                <div class="comfort-copy-box">
+                  <b id="phaseBenefit">A calm beginning to the cycle.</b>
+                  <p id="phaseSupport">The opening stage creates a stable start that helps the full motion feel confident and composed.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="motion-metrics">
+              <div class="motion-metric">
+                <span>Feel</span>
+                <b id="metricFeel">Steady Build</b>
+              </div>
+              <div class="motion-metric">
+                <span>Rhythm</span>
+                <b id="metricRhythm">Measured</b>
+              </div>
+              <div class="motion-metric">
+                <span>Effect</span>
+                <b id="metricEffect">Controlled Start</b>
+              </div>
+            </div>
+          </div>
+
+          <div class="note-panel">
+            <h3>Motion that feels naturally reassuring.</h3>
+            <p>
+              The comfort of Pluto 9000 comes from rhythm. Each phase moves into the next with a flow that feels familiar instead of abrupt. The pattern is readable, repeatable, and easy to trust.
+            </p>
+            <p>
+              Farmers know the feel of a good milking cycle without needing it explained. This section brings that instinct onto the page, turning the quiet language of pressure and release into a visible motion.
+            </p>
+
+            <div class="promise-list">
+              <div class="promise">
+                <div class="promise-icon">01</div>
+                <div><b>Pressure with purpose</b><span>The cycle opens with a controlled build that establishes a calm, confident start.</span></div>
+              </div>
+              <div class="promise">
+                <div class="promise-icon">02</div>
+                <div><b>Pulse you can feel</b><span>The motion settles into a clear cadence that feels steady and familiar.</span></div>
+              </div>
+              <div class="promise">
+                <div class="promise-icon">03</div>
+                <div><b>Release that comforts</b><span>The final let-go softens the session and helps the full cycle feel more complete.</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="wrap reveal">
+      <div class="notes-grid">
+        <div class="note-panel">
+          <h3>A milker built around the whole session.</h3>
+          <p>
+            Pluto 9000 is designed around more than suction alone. A great session has rhythm, timing, rest, and release. The machine gives the operator a way to shape the feel of the process, not just the force behind it.
+          </p>
+          <p>
+            That difference matters. When the motion is smoother and the release is more deliberate, the full experience can feel less abrupt, less mechanical, and more natural.
+          </p>
+
+          <div class="promise-list">
+            <div class="promise">
+              <div class="promise-icon">01</div>
+              <div><b>Controlled pull</b><span>Strong, steady suction with a more polished feel.</span></div>
+            </div>
+            <div class="promise">
+              <div class="promise-icon">02</div>
+              <div><b>Natural rhythm</b><span>A consistent pulse pattern that gives the session a steady heartbeat.</span></div>
+            </div>
+            <div class="promise">
+              <div class="promise-icon">03</div>
+              <div><b>Soft let-go</b><span>A more comfortable release that helps the animal relax between cycles.</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="story-orbit" aria-label="Pluto 9000 product story graphic">
+          <div class="story-card"><b>Set the feel</b><span>Adjust suction, pulse, comfort, and release from one polished interface.</span></div>
+          <div class="story-card"><b>Watch the rhythm</b><span>Live movement makes the session visible, readable, and easy to tune.</span></div>
+          <div class="story-card"><b>Shape the release</b><span>Soften the transition between pull and rest for a calmer experience.</span></div>
+          <div class="story-card"><b>Trust the system</b><span>Service checks make each major function easy to verify and easy to maintain.</span></div>
+          <div class="core" aria-hidden="true"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="wrap reveal" id="controls">
+      <div class="section-head">
+        <h2>Four solenoids. One smoother experience.</h2>
+        <p>
+          Pluto 9000 uses four controlled air-path actions to create a more refined milking rhythm. The operator experiences it as better control, cleaner pulsing, softer transitions, and a release that feels deliberate.
+        </p>
+      </div>
+
+      <div class="solenoid-grid">
+        <article class="solenoid">
+          <em>1</em>
+          <h3>Main Vacuum Control</h3>
+          <p>Manages the primary pull so the session feels steady, confident, and controlled instead of rough or unpredictable.</p>
+        </article>
+
+        <article class="solenoid">
+          <em>2</em>
+          <h3>Pulse Rhythm Control</h3>
+          <p>Creates the repeating squeeze-and-rest motion that gives Pluto 9000 its smooth, steady heartbeat.</p>
+        </article>
+
+        <article class="solenoid">
+          <em>3</em>
+          <h3>Comfort Trim Control</h3>
+          <p>Adds another layer of feel adjustment, helping the machine move from simple operation to a more refined experience.</p>
+        </article>
+
+        <article class="solenoid">
+          <em>4</em>
+          <h3>Release Control</h3>
+          <p>Delivers the signature let-go moment, easing pressure and giving the animal a more comfortable rest between cycles.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="wrap reveal" id="comfort">
+      <div class="comfort-grid">
+        <div class="comfort-panel">
+          <h2>Your bovine will feel the release.</h2>
+          <p>
+            Any milker can pull. <strong>Pluto 9000 is built to pull and let go with intention.</strong> That controlled release helps prevent the session from feeling like one constant tug. Instead, the animal gets a rhythm: pressure, draw, hold, pulse, release.
+          </p>
+          <p>
+            The release is the moment that makes Pluto 9000 feel different. It helps the session feel calmer and more natural, with smoother transitions and less abrupt pressure change.
+          </p>
+          <p>
+            That is the premium promise: a milker that does more than operate. It helps shape a better experience from start to finish.
+          </p>
+        </div>
+
+        <div class="quote-panel">
+          <blockquote>
+            Send your bovine to <span>Pluto</span> — then bring her back relaxed.
+          </blockquote>
+          <p>
+            The name is playful, but the goal is serious: premium control, familiar rhythm, softer transitions, and a milking cycle that feels second to none.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="wrap reveal">
+      <div class="section-head">
+        <h2>Built for the operator too.</h2>
+        <p>
+          A premium milker should not make the person using it fight through confusing controls. Pluto 9000 is designed to make the session easier to read, easier to tune, and easier to repeat.
+        </p>
+      </div>
+
+      <div class="operator-grid">
+        <article class="operator">
+          <h3>Fast adjustments</h3>
+          <p>Large controls make quick changes simple, letting the operator shape the feel without slowing down the workflow.</p>
+        </article>
+
+        <article class="operator">
+          <h3>Clear feedback</h3>
+          <p>Live motion on the screen shows what the machine is doing, making the session feel visible and controlled.</p>
+        </article>
+
+        <article class="operator">
+          <h3>Repeatable comfort</h3>
+          <p>Once the preferred feel is found, the machine is built around returning to that smooth, familiar cadence.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="wrap reveal" id="contact">
+      <div class="final">
+        <h2>PulseCore presents the Pluto 9000.</h2>
+        <p>
+          A premium smart milker with multiple controls, live software screens, motion-driven comfort visuals, and a signature release cycle that makes the category feel modern. Pluto 9000 is built to be smoother, smarter, and second to none.
+        </p>
+        <a class="btn" href="mailto:contact@example.com?subject=PulseCore%20Pluto%209000%20Inquiry">Launch the Pluto 9000 conversation</a>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap foot">
+      <span>© 2026 PulseCore</span>
+      <span>Pluto 9000 • Premium smart milker • Multiple comfort controls</span>
+    </div>
+  </footer>
+
+  <script>
+    const revealItems = document.querySelectorAll('.reveal');
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) entry.target.classList.add('in');
+      });
+    }, { threshold: 0.12 });
+    revealItems.forEach((item) => revealObserver.observe(item));
+
+    const stages = [
+      {
+        name: "Pressure",
+        className: "active-pressure",
+        accent: "var(--ice)",
+        title: "Pressure",
+        copy: "The cycle begins with a confident build in pressure, setting a steady foundation for the motion that follows.",
+        benefit: "A calm beginning to the cycle.",
+        support: "The opening stage creates a stable start that helps the full motion feel confident and composed.",
+        feel: "Steady Build",
+        rhythm: "Measured",
+        effect: "Controlled Start",
+        progress: "20%",
+        wave: "M0,116 C44,116 58,70 98,70 C146,70 146,116 196,116 C246,116 246,70 296,70 C346,70 346,116 396,116 C446,116 446,70 496,70 C544,70 554,116 600,116",
+        color: "rgba(126,231,255,.92)"
+      },
+      {
+        name: "Suck",
+        className: "active-suck",
+        accent: "var(--violet)",
+        title: "Suck",
+        copy: "This is the draw phase, where the motion becomes purposeful and the session begins to feel fully engaged.",
+        benefit: "The working draw of the cycle.",
+        support: "The suction stage gives the motion its active pull while keeping the rhythm smooth and readable.",
+        feel: "Confident Draw",
+        rhythm: "Focused",
+        effect: "Active Pull",
+        progress: "40%",
+        wave: "M0,126 C42,126 52,42 96,42 C144,42 144,126 194,126 C244,126 244,42 294,42 C344,42 344,126 394,126 C444,126 444,42 494,42 C544,42 554,126 600,126",
+        color: "rgba(185,156,255,.94)"
+      },
+      {
+        name: "Hold",
+        className: "active-hold",
+        accent: "var(--cream)",
+        title: "Hold",
+        copy: "The hold phase stabilizes the motion, giving the cycle a composed pause that makes the full sequence feel balanced.",
+        benefit: "A controlled rest inside the rhythm.",
+        support: "This stage adds steadiness and helps prevent the full cycle from feeling rushed or abrupt.",
+        feel: "Balanced Pause",
+        rhythm: "Stable",
+        effect: "Settled Hold",
+        progress: "60%",
+        wave: "M0,106 C70,106 82,54 124,54 C176,54 182,54 238,54 C294,54 300,54 356,54 C412,54 420,54 478,54 C536,54 548,106 600,106",
+        color: "rgba(255,248,239,.92)"
+      },
+      {
+        name: "Pulse",
+        className: "active-pulse",
+        accent: "var(--rose)",
+        title: "Pulse",
+        copy: "The cycle quickens into a clear pulse, delivering the heartbeat of the system in a way that feels familiar and easy to trust.",
+        benefit: "The recognizable heartbeat of the session.",
+        support: "This pulse stage is the rhythm farmers instinctively understand — steady, repeating, and reassuring.",
+        feel: "Lively Pulse",
+        rhythm: "Recognizable",
+        effect: "Cadenced Flow",
+        progress: "80%",
+        wave: "M0,122 C24,122 26,60 50,60 C74,60 76,122 100,122 C124,122 126,60 150,60 C174,60 176,122 200,122 C224,122 226,60 250,60 C274,60 276,122 300,122 C324,122 326,60 350,60 C374,60 376,122 400,122 C424,122 426,60 450,60 C474,60 476,122 500,122 C524,122 526,60 550,60 C574,60 576,122 600,122",
+        color: "rgba(255,113,188,.94)"
+      },
+      {
+        name: "Release",
+        className: "active-release",
+        accent: "var(--peach)",
+        title: "Release",
+        copy: "The cycle opens back up into release, easing pressure and giving the session its signature moment of comfort.",
+        benefit: "The soft let-go that sets Pluto 9000 apart.",
+        support: "Release is where the full sequence resolves, helping the motion feel more natural and more complete.",
+        feel: "Soft Let-Go",
+        rhythm: "Open",
+        effect: "Comfort Reset",
+        progress: "100%",
+        wave: "M0,96 C60,96 84,128 122,128 C170,128 190,52 240,52 C290,52 310,128 360,128 C410,128 428,76 478,76 C528,76 550,96 600,96",
+        color: "rgba(255,178,125,.94)"
+      }
+    ];
+
+    let stageIndex = 0;
+    let cadencePaused = false;
+    let cadenceDelay = 3600;
+    let cadenceTimer = null;
+
+    const cadenceSpeeds = {
+      1: { delay: 6000, pulse: 2200, ring: 5200, label: "Very slow / 6.0s per stage", caption: "Extra gentle, almost meditative." },
+      2: { delay: 4600, pulse: 1800, ring: 4200, label: "Slow / 4.6s per stage", caption: "Soft and deliberate." },
+      3: { delay: 3600, pulse: 1400, ring: 3200, label: "Calm / 3.6s per stage", caption: "A slow, reassuring cycle." },
+      4: { delay: 2600, pulse: 1050, ring: 2400, label: "Working / 2.6s per stage", caption: "A more active parlor rhythm." },
+      5: { delay: 1800, pulse: 750, ring: 1700, label: "Demo / 1.8s per stage", caption: "Faster for showing the full sequence." }
+    };
+
+    const phaseTitle = document.getElementById('phaseTitle');
+    const phaseCopy = document.getElementById('phaseCopy');
+    const phaseBenefit = document.getElementById('phaseBenefit');
+    const phaseSupport = document.getElementById('phaseSupport');
+    const metricFeel = document.getElementById('metricFeel');
+    const metricRhythm = document.getElementById('metricRhythm');
+    const metricEffect = document.getElementById('metricEffect');
+    const cycleProgress = document.getElementById('cycleProgress');
+    const chamberAnim = document.getElementById('chamberAnim');
+    const cadenceWave = document.getElementById('cadenceWave');
+    const cadenceShell = document.getElementById('cadenceShell');
+    const cadenceToggle = document.getElementById('cadenceToggle');
+    const cadenceSpeed = document.getElementById('cadenceSpeed');
+    const speedReadout = document.getElementById('speedReadout');
+    const speedCaption = document.getElementById('speedCaption');
+
+    const stepEls = document.querySelectorAll('.cycle-step');
+    const dotEls = document.querySelectorAll('#cycleDots > div');
+    const labelEls = document.querySelectorAll('#cadenceLabels > div');
+    const motionMetricValues = document.querySelectorAll('.motion-metric b');
+
+    function setStage(i) {
+      const s = stages[i];
+      stageIndex = i;
+
+      document.documentElement.style.setProperty('--stage-accent', s.accent);
+      phaseTitle.textContent = s.title;
+      phaseCopy.textContent = s.copy;
+      phaseBenefit.textContent = s.benefit;
+      phaseSupport.textContent = s.support;
+      metricFeel.textContent = s.feel;
+      metricRhythm.textContent = s.rhythm;
+      metricEffect.textContent = s.effect;
+      cycleProgress.style.width = s.progress;
+      cycleProgress.style.background = `linear-gradient(90deg, ${s.color}, var(--violet), var(--peach))`;
+      cadenceWave.setAttribute('d', s.wave);
+      cadenceWave.style.stroke = s.color;
+      chamberAnim.className = 'chamber ' + s.className;
+
+      stepEls.forEach((el, idx) => el.classList.toggle('active', idx === i));
+      dotEls.forEach((el, idx) => el.classList.toggle('on', idx === i));
+      labelEls.forEach((el, idx) => el.classList.toggle('active', idx === i));
+      motionMetricValues.forEach((el) => { el.style.color = s.accent; });
+    }
+
+    function applyCadenceSpeed(value) {
+      const speed = cadenceSpeeds[value];
+      cadenceDelay = speed.delay;
+      document.documentElement.style.setProperty('--cadence-speed', `${speed.delay}ms`);
+      document.documentElement.style.setProperty('--cadence-pulse-speed', `${speed.pulse}ms`);
+      document.documentElement.style.setProperty('--cadence-ring-speed', `${speed.ring}ms`);
+      speedReadout.textContent = speed.label;
+      speedCaption.textContent = speed.caption;
+
+      if (!cadencePaused) startCadenceTimer();
+    }
+
+    function startCadenceTimer() {
+      clearInterval(cadenceTimer);
+      cadenceTimer = setInterval(() => {
+        if (!cadencePaused) setStage((stageIndex + 1) % stages.length);
+      }, cadenceDelay);
+    }
+
+    function setPaused(paused) {
+      cadencePaused = paused;
+      cadenceShell.classList.toggle('cadence-paused', paused);
+      cadenceToggle.textContent = paused ? 'Play Cadence' : 'Pause Cadence';
+
+      if (paused) {
+        clearInterval(cadenceTimer);
+      } else {
+        startCadenceTimer();
+      }
+    }
+
+    stepEls.forEach((el) => {
+      el.addEventListener('click', () => {
+        setStage(Number(el.dataset.step));
+        if (!cadencePaused) startCadenceTimer();
+      });
+    });
+
+    cadenceToggle.addEventListener('click', () => {
+      setPaused(!cadencePaused);
+    });
+
+    cadenceSpeed.addEventListener('input', () => {
+      applyCadenceSpeed(cadenceSpeed.value);
+    });
+
+    setStage(0);
+    applyCadenceSpeed(cadenceSpeed.value);
+  </script>
+</body>
+</html>

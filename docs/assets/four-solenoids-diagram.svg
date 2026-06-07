@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="780" viewBox="0 0 1100 780">
+<style>
+.bg{fill:#f4efe4}.line{stroke:#153047;stroke-width:10;fill:none;stroke-linecap:round;stroke-linejoin:round}.vac{stroke:#19a8ff}.pulse{stroke:#ff7cb0}.rel{stroke:#f5a524}.text{fill:#102030;font-family:Arial,sans-serif}.muted{fill:#47627a;font-family:Arial,sans-serif}.box{fill:#ffffff;stroke:#c7d5e3;stroke-width:3}.pill{fill:#102030}.n{fill:#fff;font-family:Arial,sans-serif;font-size:24px;font-weight:700}.label{font-size:28px;font-weight:700}.small{font-size:22px}
+</style>
+<rect class="bg" width="1100" height="780" rx="28"/>
+<text class="text" x="60" y="76" style="font-size:44px;font-weight:800">Pluto 9000 • four-solenoid air-path overview</text>
+<text class="muted" x="60" y="112" style="font-size:24px">Marketing diagram showing the control architecture at a glance</text>
+<rect class="box" x="80" y="300" width="160" height="120" rx="24"/><text class="text label" x="160" y="360" text-anchor="middle">Pump</text>
+<rect class="box" x="440" y="250" width="210" height="220" rx="30"/><text class="text label" x="545" y="310" text-anchor="middle">Vacuum hub</text><text class="muted small" x="545" y="348" text-anchor="middle">main split + trim + release</text>
+<rect class="box" x="860" y="295" width="170" height="130" rx="24"/><text class="text label" x="945" y="350" text-anchor="middle">Chamber</text><text class="muted small" x="945" y="382" text-anchor="middle">comfort output</text>
+<path class="line vac" d="M240 360 H430"/>
+<path class="line vac" d="M650 360 H850"/>
+<path class="line pulse" d="M545 470 V590 H920"/>
+<path class="line rel" d="M650 250 V170 H860"/>
+<path class="line" d="M440 360 H320 V170 H550"/>
+<g>
+<circle class="pill" cx="350" cy="170" r="24"/><text class="n" x="350" y="178" text-anchor="middle">1</text><text class="text small" x="388" y="178">Main Vacuum Control</text>
+<circle class="pill" cx="920" cy="590" r="24"/><text class="n" x="920" y="598" text-anchor="middle">2</text><text class="text small" x="958" y="598">Pulse Rhythm Control</text>
+<circle class="pill" cx="545" cy="610" r="24"/><text class="n" x="545" y="618" text-anchor="middle">3</text><text class="text small" x="583" y="618">Comfort Trim Control</text>
+<circle class="pill" cx="860" cy="170" r="24"/><text class="n" x="860" y="178" text-anchor="middle">4</text><text class="text small" x="898" y="178">Release Control</text>
+</g>
+<rect class="box" x="80" y="650" width="940" height="86" rx="20"/>
+<text class="muted small" x="110" y="702">1 steadies the pull • 2 creates the squeeze-and-rest rhythm • 3 refines comfort • 4 manages the soft let-go release</text>
+</svg>

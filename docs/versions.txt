@@ -1,0 +1,21 @@
+Pluto 9000 site bundle
+======================
+
+Files:
+- index.html is the most recent version.
+- index1.html ... index11.html are earlier versions in chronological order.
+- assets/ contains mascot images, the new splash/drink variants, the Milky contact sheet, and SVG support assets referenced by the later site builds.
+
+Version map:
+index1.html  <-  pulsecore_one_page_site.html
+index2.html  <-  plutocore_pluto_9000_one_page.html
+index3.html  <-  pulsecore_pluto_9000_animated.html
+index4.html  <-  pulsecore_pluto_9000_no_live_images.html
+index5.html  <-  pulsecore_pluto_9000_more_motion.html
+index6.html  <-  pulsecore_pluto_9000_cadence_controls.html
+index7.html  <-  pulsecore_pluto_9000_independent_cadence.html
+index8.html  <-  pulsecore_pluto_9000_more_undulation.html
+index9.html  <-  pulsecore_pluto_9000_center_pronounced.html
+index10.html  <-  pulsecore_pluto_9000_center_unit_high_contrast.html
+index11.html  <-  pluto9000_milky_site/index.html
+index.html   <-  pluto9000_real_site/index.html (most recent)
