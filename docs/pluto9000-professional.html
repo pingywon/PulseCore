@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PulseCore Pluto 9000 — Precision Milking Cadence Control</title>
+<meta name="description" content="The Pluto 9000 by PulseCore is a precision milking controller that replaces a single constant vacuum with a tunable five-phase cadence: pressure, vacuum pull, hold, pulse, and a controlled release." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#0f1216; --bg2:#141820; --panel:#181d25; --card:#1c222b; --ink:#0b0d11;
+  --cream:#ece5d7; --muted:#a6adb8; --faint:#6f7884;
+  --brass:#c8a86a; --brass-2:#e2cd9c; --steel:#6f9ab8; --steel-2:#9cc3dd;
+  --line:#28303b; --line-2:#333d4a;
+  --radius:14px; --wide:1240px;
+  --pulse:0;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--cream);
+  font-family:"IBM Plex Sans",ui-sans-serif,system-ui,sans-serif;line-height:1.65;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden;font-weight:300}
+body:before{content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;
+  background:
+    radial-gradient(1100px 700px at 82% -10%,rgba(200,168,106,.08),transparent 60%),
+    radial-gradient(900px 700px at 0% 30%,rgba(111,154,184,.06),transparent 60%),
+    linear-gradient(180deg,#0f1216,#10141a 50%,#0e1115)}
+img{display:block;max-width:100%}
+a{color:inherit;text-decoration:none}
+button,input,textarea{font:inherit;color:inherit}
+.wrap{width:min(calc(100% - 48px),var(--wide));margin:auto}
+.serif{font-family:"IBM Plex Serif",Georgia,serif}
+.mono{font-family:"IBM Plex Mono",ui-monospace,monospace}
+.eyebrow{font-family:"IBM Plex Mono",monospace;font-size:.72rem;letter-spacing:.28em;text-transform:uppercase;color:var(--brass);font-weight:500}
+.rule{height:1px;background:var(--line);border:0;margin:0}
+
+/* nav */
+.topbar{position:sticky;top:0;z-index:50;background:rgba(15,18,22,.82);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.nav{min-height:72px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.brand{display:flex;align-items:center;gap:13px}
+.mark{width:42px;height:42px;border-radius:9px;border:1px solid var(--brass);
+  display:grid;place-items:center;font-family:"IBM Plex Serif",serif;font-weight:600;color:var(--brass);background:rgba(200,168,106,.06)}
+.brand b{font-family:"IBM Plex Serif",serif;font-weight:600;font-size:1.12rem;display:block;line-height:1.05;letter-spacing:.01em}
+.brand span{display:block;font-family:"IBM Plex Mono",monospace;font-size:.66rem;color:var(--faint);letter-spacing:.2em;text-transform:uppercase;margin-top:3px}
+.links{display:flex;align-items:center;gap:6px}
+.links nav{display:flex;gap:2px}
+.links nav a{padding:9px 14px;border-radius:8px;color:var(--muted);font-size:.92rem;font-weight:400;transition:.2s}
+.links nav a:hover{color:var(--cream);background:rgba(255,255,255,.04)}
+.cta{padding:10px 18px;border-radius:8px;font-weight:500;font-size:.92rem;border:1px solid var(--brass);color:var(--brass);transition:.2s}
+.cta:hover{background:var(--brass);color:#1a1408}
+
+/* hero */
+main{padding-bottom:70px}
+.hero{display:grid;grid-template-columns:1.1fr .9fr;gap:48px;align-items:center;padding:72px 0 60px;border-bottom:1px solid var(--line)}
+.hero-copy .eyebrow{display:block;margin-bottom:22px}
+h1{font-family:"IBM Plex Serif",serif;font-weight:600;font-size:clamp(2.7rem,5.2vw,4.6rem);line-height:1.04;letter-spacing:-.01em;margin:0}
+h1 em{font-style:italic;font-weight:400;color:var(--brass-2)}
+.lead{max-width:540px;margin:24px 0 0;color:var(--muted);font-size:1.12rem;font-weight:300}
+.hero-actions{display:flex;gap:14px;flex-wrap:wrap;margin-top:34px}
+.btn{display:inline-flex;align-items:center;gap:9px;min-height:50px;padding:0 24px;border-radius:9px;
+  border:1px solid var(--line-2);background:transparent;font-weight:500;font-size:.96rem;transition:.2s;color:var(--cream)}
+.btn:hover{border-color:var(--brass);color:var(--brass-2)}
+.btn.primary{background:var(--brass);border-color:var(--brass);color:#1a1408}
+.btn.primary:hover{background:var(--brass-2);color:#1a1408}
+.spec-strip{display:flex;gap:0;margin-top:42px;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.spec-strip div{flex:1;padding:16px 18px;border-right:1px solid var(--line)}
+.spec-strip div:last-child{border-right:0}
+.spec-strip b{font-family:"IBM Plex Mono",monospace;display:block;font-size:1.25rem;color:var(--cream);font-weight:500;line-height:1}
+.spec-strip span{font-size:.72rem;color:var(--faint);letter-spacing:.05em;margin-top:5px;display:block}
+
+.hero-art{position:relative;display:grid;place-items:center;min-height:480px}
+.hero-art:before{content:"";position:absolute;width:min(360px,84%);aspect-ratio:3/4;border:1px solid var(--line-2);border-radius:18px;
+  background:radial-gradient(60% 55% at 50% 42%,rgba(200,168,106,.12),var(--ink) 72%)}
+.ring{position:absolute;width:min(330px,78%);aspect-ratio:1;border-radius:50%;border:1px solid rgba(200,168,106,.3);
+  transform:scale(calc(1 + var(--pulse)*.03))}
+.milky-hero{position:relative;z-index:3;max-height:440px;mix-blend-mode:screen;
+  filter:drop-shadow(0 22px 34px rgba(0,0,0,.55));
+  -webkit-mask:linear-gradient(to right,transparent,#000 8%,#000 92%,transparent),linear-gradient(to bottom,transparent,#000 5%,#000 95%,transparent);
+  -webkit-mask-composite:source-in;mask:linear-gradient(to right,transparent,#000 8%,#000 92%,transparent),linear-gradient(to bottom,transparent,#000 5%,#000 95%,transparent);mask-composite:intersect}
+.tag{position:absolute;z-index:4;padding:9px 13px;border-radius:8px;background:rgba(11,13,17,.82);border:1px solid var(--line-2);font-family:"IBM Plex Mono",monospace;font-size:.74rem;color:var(--muted)}
+.tag b{color:var(--brass-2);font-weight:500}
+.tag.t1{top:12%;left:2%} .tag.t2{bottom:14%;right:0}
+
+/* sections */
+.section{padding:72px 0;border-bottom:1px solid var(--line)}
+.section-head{max-width:760px;margin-bottom:44px}
+.section-head .eyebrow{display:block;margin-bottom:16px}
+.h2{font-family:"IBM Plex Serif",serif;font-weight:600;font-size:clamp(1.9rem,3.4vw,2.9rem);line-height:1.1;letter-spacing:-.01em;margin:0}
+.h2 em{font-style:italic;font-weight:400;color:var(--brass-2)}
+.section-head p{color:var(--muted);font-size:1.06rem;margin:14px 0 0;font-weight:300}
+
+/* problem / two-col */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+.two .col{padding:34px}
+.two .col:first-child{border-right:1px solid var(--line);background:rgba(255,255,255,.012)}
+.two .col h3{font-family:"IBM Plex Serif",serif;font-weight:500;font-size:1.4rem;margin:0 0 10px}
+.two .col.a h3{color:var(--faint)}
+.two .col.b h3{color:var(--brass-2)}
+.two .col p{margin:0;color:var(--muted);font-weight:300}
+.two .col .flat{margin-top:26px;height:40px;border-radius:6px;background:repeating-linear-gradient(90deg,var(--line) 0 1px,transparent 1px 26px);position:relative}
+.two .col .flat:before{content:"";position:absolute;top:50%;left:0;right:0;height:2px;background:var(--faint);transform:translateY(-50%)}
+.two .col canvas{margin-top:26px;width:100%;height:40px;display:block}
+
+/* cadence list */
+.cadence-list{display:grid;gap:0;border-top:1px solid var(--line)}
+.cad-row{display:grid;grid-template-columns:60px 200px 1fr;gap:24px;align-items:baseline;padding:24px 4px;border-bottom:1px solid var(--line);transition:.2s}
+.cad-row:hover{background:rgba(255,255,255,.015)}
+.cad-row .n{font-family:"IBM Plex Mono",monospace;color:var(--brass);font-size:1.1rem}
+.cad-row h4{font-family:"IBM Plex Serif",serif;font-weight:500;font-size:1.3rem;margin:0}
+.cad-row p{margin:0;color:var(--muted);font-weight:300}
+
+/* demo */
+.demo{display:grid;grid-template-columns:.82fr 1.18fr;gap:24px;align-items:stretch}
+.panel{border:1px solid var(--line);border-radius:var(--radius);background:var(--panel);padding:26px}
+.demo-controls{display:grid;gap:22px;align-content:start}
+.run-btn{min-height:54px;border-radius:9px;border:1px solid var(--brass);background:rgba(200,168,106,.08);color:var(--brass-2);
+  font-family:"IBM Plex Mono",monospace;font-weight:500;font-size:1rem;letter-spacing:.06em;cursor:pointer;transition:.2s}
+.run-btn:hover{background:rgba(200,168,106,.16)}
+.run-btn.on{border-color:var(--steel);background:rgba(111,154,184,.12);color:var(--steel-2)}
+.status{font-family:"IBM Plex Mono",monospace;font-size:.76rem;color:var(--faint);text-align:center}
+.ctrl{border:1px solid var(--line);border-radius:10px;padding:18px;background:var(--card)}
+.ctrl-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px}
+.ctrl-top b{font-family:"IBM Plex Serif",serif;font-weight:500;font-size:1.1rem}
+.ctrl-top .val{font-family:"IBM Plex Mono",monospace;font-size:1.15rem;color:var(--brass-2)}
+.ctrl p{margin:0 0 14px;color:var(--faint);font-size:.82rem;font-weight:300}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:5px;border-radius:999px;
+  background:linear-gradient(90deg,var(--brass) 0 var(--fill,50%),#2a323d var(--fill,50%) 100%);outline:none}
+.ctrl.steelc input[type=range]{background:linear-gradient(90deg,var(--steel) 0 var(--fill,50%),#2a323d var(--fill,50%) 100%)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;cursor:pointer;
+  background:var(--cream);border:2px solid var(--brass);box-shadow:0 2px 8px rgba(0,0,0,.5)}
+.ctrl.steelc input[type=range]::-webkit-slider-thumb{border-color:var(--steel)}
+input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;cursor:pointer;background:var(--cream);border:2px solid var(--brass)}
+
+.stage{border:1px solid var(--line);border-radius:var(--radius);background:var(--ink);padding:24px;display:grid;gap:20px}
+.stage-head{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:16px}
+.stage-head .now{font-family:"IBM Plex Serif",serif;font-style:italic;font-size:1.2rem;color:var(--brass-2)}
+.readouts{display:flex;gap:8px}
+.ro{font-family:"IBM Plex Mono",monospace;text-align:center;padding:8px 13px;border:1px solid var(--line);border-radius:8px}
+.ro b{display:block;font-size:1.1rem;color:var(--cream);font-weight:500}
+.ro span{font-size:.62rem;color:var(--faint);letter-spacing:.1em}
+.wave-wrap{border:1px solid var(--line);border-radius:10px;background:#090b0f;overflow:hidden}
+#wave{display:block;width:100%;height:220px}
+.stage-bottom{display:grid;grid-template-columns:220px 1fr;gap:18px;align-items:center}
+.chamber{position:relative;height:150px;border:1px solid var(--line);border-radius:10px;background:#090b0f;display:grid;place-items:center}
+.cyl{position:relative;width:88px;height:120px;border-radius:14px;border:1px solid var(--line-2);overflow:hidden;background:rgba(255,255,255,.02)}
+.fluid{position:absolute;left:0;right:0;bottom:0;height:var(--vac,40%);background:linear-gradient(180deg,var(--steel-2),var(--steel));opacity:.8;transition:height .12s linear}
+.pump{position:absolute;top:8px;right:10px;font-family:"IBM Plex Mono",monospace;font-size:.62rem;color:var(--faint)}
+.pulse-dot{position:absolute;top:8px;left:10px;width:10px;height:10px;border-radius:50%;background:var(--brass);
+  box-shadow:0 0 0 calc(var(--pulse)*7px) rgba(200,168,106,.18)}
+.cadence{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}
+.cad{padding:11px 6px;border:1px solid var(--line);border-radius:8px;text-align:center;font-size:.74rem;color:var(--faint);
+  font-family:"IBM Plex Mono",monospace;transition:.18s}
+.cad.active{color:var(--cream);border-color:var(--brass);background:rgba(200,168,106,.1)}
+
+/* hardware */
+.hw{display:grid;grid-template-columns:1.05fr .95fr;gap:34px;align-items:center}
+.diagram-box{border:1px solid var(--line);border-radius:var(--radius);background:#f4efe4;padding:18px}
+.sol-list{display:grid;gap:0;border-top:1px solid var(--line)}
+.sol{display:grid;grid-template-columns:42px 1fr;gap:18px;padding:20px 4px;border-bottom:1px solid var(--line)}
+.sol .num{width:42px;height:42px;border-radius:9px;border:1px solid var(--line-2);display:grid;place-items:center;
+  font-family:"IBM Plex Mono",monospace;color:var(--brass);font-weight:500}
+.sol h4{font-family:"IBM Plex Serif",serif;font-weight:500;font-size:1.15rem;margin:0 0 4px}
+.sol p{margin:0;color:var(--muted);font-size:.92rem;font-weight:300}
+
+/* software */
+.sw-screens{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.screen{border:1px solid var(--line);border-radius:12px;background:var(--card);padding:16px}
+.screen img{border-radius:8px;border:1px solid var(--line);background:#000;margin-bottom:14px}
+.screen h4{font-family:"IBM Plex Serif",serif;font-weight:500;font-size:1.05rem;margin:0 0 5px}
+.screen p{margin:0;font-size:.85rem;color:var(--muted);font-weight:300}
+.sw-feats{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:24px;border-top:1px solid var(--line);padding-top:30px}
+.feat .k{font-family:"IBM Plex Mono",monospace;color:var(--brass);font-size:.74rem;letter-spacing:.08em;display:block;margin-bottom:8px}
+.feat b{font-family:"IBM Plex Serif",serif;font-weight:500;display:block;margin-bottom:5px}
+.feat p{margin:0;color:var(--muted);font-size:.9rem;font-weight:300}
+
+/* timeline (endurance) */
+.timeline{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.tl{text-align:center}
+.tl .mglow{display:inline-grid;place-items:center;border-radius:50%;
+  background:radial-gradient(circle at 50% 46%,rgba(200,168,106,.12),var(--ink) 70%)}
+.tl .mglow img{max-height:200px;mix-blend-mode:screen;filter:drop-shadow(0 12px 22px rgba(0,0,0,.5));
+  -webkit-mask:linear-gradient(to right,transparent,#000 7%,#000 93%,transparent),linear-gradient(to bottom,transparent,#000 6%,#000 94%,transparent);
+  -webkit-mask-composite:source-in;mask:linear-gradient(to right,transparent,#000 7%,#000 93%,transparent),linear-gradient(to bottom,transparent,#000 6%,#000 94%,transparent);mask-composite:intersect}
+.tl .t{font-family:"IBM Plex Mono",monospace;color:var(--brass);font-size:.78rem;margin-top:10px}
+.tl .d{color:var(--faint);font-size:.82rem;font-weight:300}
+
+/* brand */
+.brand-row{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center}
+.brand-art{position:relative;display:flex;align-items:center;justify-content:center;gap:0;min-height:360px;
+  border:1px solid var(--line);border-radius:var(--radius);background:radial-gradient(60% 60% at 50% 46%,rgba(200,168,106,.10),var(--ink) 72%)}
+.brand-art .mglow{display:inline-grid;place-items:center}
+.brand-art .mglow img{max-height:300px;mix-blend-mode:screen;filter:drop-shadow(0 14px 24px rgba(0,0,0,.5));
+  -webkit-mask:linear-gradient(to right,transparent,#000 8%,#000 92%,transparent),linear-gradient(to bottom,transparent,#000 6%,#000 94%,transparent);
+  -webkit-mask-composite:source-in;mask:linear-gradient(to right,transparent,#000 8%,#000 92%,transparent),linear-gradient(to bottom,transparent,#000 6%,#000 94%,transparent);mask-composite:intersect}
+.brand-art .bessie{width:min(220px,44%);margin-left:-12px;filter:drop-shadow(0 12px 22px rgba(0,0,0,.4))}
+.brand-copy h3{font-family:"IBM Plex Serif",serif;font-weight:500;font-style:italic;font-size:1.7rem;margin:0 0 14px;line-height:1.15}
+.brand-copy p{color:var(--muted);font-weight:300;margin:0 0 10px}
+.brand-copy .mono{color:var(--faint);font-size:.8rem;letter-spacing:.08em;margin-top:6px}
+
+/* specs */
+.spec-table{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+.spec-table .r{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.spec-table .c{display:flex;justify-content:space-between;gap:16px;padding:16px 22px;border-bottom:1px solid var(--line);border-right:1px solid var(--line)}
+.spec-table .c .k{color:var(--muted);font-weight:300}
+.spec-table .c .v{font-family:"IBM Plex Mono",monospace;color:var(--brass-2);text-align:right}
+
+/* contact */
+.contact{display:grid;grid-template-columns:.92fr 1.08fr;gap:34px}
+.glance{display:grid;gap:0;border-top:1px solid var(--line)}
+.glance .row{display:grid;grid-template-columns:30px 1fr;gap:14px;padding:16px 2px;border-bottom:1px solid var(--line)}
+.glance .tick{color:var(--brass);font-family:"IBM Plex Mono",monospace}
+.glance b{font-family:"IBM Plex Serif",serif;font-weight:500}
+.glance span{display:block;color:var(--muted);font-size:.88rem;font-weight:300}
+form{display:grid;gap:14px}
+label{display:grid;gap:6px;font-size:.78rem;color:var(--muted);font-family:"IBM Plex Mono",monospace;letter-spacing:.04em;text-transform:uppercase}
+input[type=text],input[type=email],textarea{border:1px solid var(--line-2);background:var(--ink);border-radius:9px;padding:13px 15px;font-weight:300}
+input::placeholder,textarea::placeholder{color:var(--faint)}
+textarea{min-height:120px;resize:vertical}
+
+.footer{padding:34px 0 10px;color:var(--faint);display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;font-size:.86rem;font-weight:300}
+
+.reveal{opacity:0;transform:translateY(16px);transition:opacity .7s ease,transform .7s ease}
+.reveal.in{opacity:1;transform:none}
+
+@media(max-width:1040px){
+  .hero,.demo,.hw,.brand-row,.contact{grid-template-columns:1fr}
+  .hero-art{order:-1;min-height:380px}
+  .sw-screens,.sw-feats{grid-template-columns:1fr}
+  .two,.spec-table .r{grid-template-columns:1fr}
+  .two .col:first-child{border-right:0;border-bottom:1px solid var(--line)}
+  .stage-bottom{grid-template-columns:1fr}
+  .timeline{grid-template-columns:1fr 1fr}
+  .cad-row{grid-template-columns:40px 1fr;gap:14px}
+  .cad-row p{grid-column:1 / -1}
+}
+@media(max-width:640px){
+  .links nav{display:none}
+  .cadence{grid-template-columns:1fr 1fr}
+  .spec-strip{flex-wrap:wrap}.spec-strip div{flex:1 1 40%}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}.reveal{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap nav">
+    <a class="brand" href="#top"><div class="mark">P9</div><div><b>PulseCore</b><span>Pluto 9000</span></div></a>
+    <div class="links">
+      <nav><a href="#cadence">Cadence</a><a href="#demo">Demo</a><a href="#hardware">Hardware</a><a href="#specs">Specs</a></nav>
+      <a class="cta" href="#contact">Request a demo</a>
+    </div>
+  </div>
+</header>
+
+<main class="wrap" id="top">
+
+  <section class="hero">
+    <div class="hero-copy">
+      <span class="eyebrow">Precision cadence control</span>
+      <h1>The Pluto 9000.<br><em>Rhythm, engineered.</em></h1>
+      <p class="lead">A conventional milker applies one constant vacuum. The Pluto 9000 replaces it with a controllable five-phase cadence — pressure, vacuum pull, hold, pulse, and a measured release — so the session can be tuned for comfort and consistency rather than locked to a single setting.</p>
+      <div class="hero-actions">
+        <a class="btn primary" href="#demo">Open the live demo</a>
+        <a class="btn" href="#hardware">Review the system</a>
+      </div>
+      <div class="spec-strip">
+        <div><b>40–300</b><span>PPM RANGE</span></div>
+        <div><b>0–100%</b><span>SUCTION</span></div>
+        <div><b>4</b><span>SOLENOIDS</span></div>
+        <div><b>5</b><span>PHASES</span></div>
+      </div>
+    </div>
+    <div class="hero-art">
+      <div class="ring"></div>
+      <div class="tag t1">SUCTION <b>68%</b></div>
+      <div class="tag t2">PULSE <b>46 PPM</b></div>
+      <img class="milky-hero" src="assets/milky-standing-happy.png" alt="Milky, the PulseCore mascot" />
+    </div>
+  </section>
+
+  <section class="section" id="why">
+    <div class="section-head">
+      <span class="eyebrow">The principle</span>
+      <h2 class="h2">Control the session, <em>not just the motor.</em></h2>
+      <p>A single constant pull is blunt and fatiguing. Separating the cycle into distinct, adjustable phases lets the operator shape how pressure builds, how the vacuum draws, how long it holds, how it pulses, and how gently it releases.</p>
+    </div>
+    <div class="two reveal">
+      <div class="col a">
+        <h3>Conventional milker</h3>
+        <p>One speed, one pressure. A flat, uninterrupted vacuum with no variation and no controlled release.</p>
+        <div class="flat"></div>
+      </div>
+      <div class="col b">
+        <h3>Pluto 9000</h3>
+        <p>A measured cadence that builds, draws, holds, pulses, and releases — readable on screen and adjustable in real time.</p>
+        <canvas id="miniWave"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="cadence">
+    <div class="section-head">
+      <span class="eyebrow">The five-phase cadence</span>
+      <h2 class="h2">Each phase has a <em>defined role.</em></h2>
+      <p>The cycle is intentionally legible. Every phase does one job, and the controller exposes how they flow together.</p>
+    </div>
+    <div class="cadence-list reveal">
+      <div class="cad-row"><div class="n">01</div><h4>Pressure</h4><p>A controlled build so the cycle begins cleanly rather than abruptly.</p></div>
+      <div class="cad-row"><div class="n">02</div><h4>Vacuum Pull</h4><p>The working draw — steady, readable, and fully adjustable.</p></div>
+      <div class="cad-row"><div class="n">03</div><h4>Hold</h4><p>A deliberate dwell that keeps the motion composed rather than abrupt.</p></div>
+      <div class="cad-row"><div class="n">04</div><h4>Pulse</h4><p>The repeating squeeze-and-rest action that establishes the rhythm.</p></div>
+      <div class="cad-row"><div class="n">05</div><h4>Release</h4><p>A measured let-go that resets the cycle in a controlled way.</p></div>
+    </div>
+  </section>
+
+  <section class="section" id="demo">
+    <div class="section-head">
+      <span class="eyebrow">Interactive demonstration</span>
+      <h2 class="h2">Two controls. <em>One coordinated cadence.</em></h2>
+      <p>The demonstration mirrors the device exactly. The Pluto 9000 adjusts two parameters — suction and speed — and the cadence follows. No additional sliders, because the hardware has none.</p>
+    </div>
+    <div class="demo">
+      <div class="panel demo-controls">
+        <button id="runBtn" class="run-btn" type="button">▶  START</button>
+        <div class="status" id="runStatus">Idle — start to run the cadence</div>
+        <div class="ctrl" id="vacCtrl">
+          <div class="ctrl-top"><b>Suction</b><span class="val" id="vacVal">68%</span></div>
+          <p>Primary vacuum pull — the depth of the draw (0–100%).</p>
+          <input id="vacRange" type="range" min="0" max="100" value="68">
+        </div>
+        <div class="ctrl steelc" id="ppmCtrl">
+          <div class="ctrl-top"><b>Speed</b><span class="val" id="ppmVal">46 PPM</span></div>
+          <p>True pulse frequency. 60 PPM equals one pulse per second (40–300).</p>
+          <input id="ppmRange" type="range" min="40" max="300" value="46">
+        </div>
+        <div class="status" id="hint" style="text-align:left;color:var(--muted)">Suction sets the amplitude of each beat; speed sets how frequently they occur.</div>
+      </div>
+      <div class="panel stage">
+        <div class="stage-head">
+          <span class="now">Phase — <span id="phaseName">Pressure</span></span>
+          <div class="readouts">
+            <div class="ro"><b id="roVac">68%</b><span>SUCTION</span></div>
+            <div class="ro"><b id="roPpm">46</b><span>PPM</span></div>
+            <div class="ro"><b id="roHz">0.8</b><span>PULSES/S</span></div>
+          </div>
+        </div>
+        <div class="wave-wrap"><canvas id="wave"></canvas></div>
+        <div class="stage-bottom">
+          <div class="chamber">
+            <span class="pump" id="pumpLabel">PUMP ●</span>
+            <span class="pulse-dot"></span>
+            <div class="cyl"><div class="fluid" id="fluid"></div></div>
+          </div>
+          <div class="cadence" id="cadence">
+            <div class="cad">Pressure</div><div class="cad">Vacuum</div><div class="cad">Hold</div><div class="cad">Pulse</div><div class="cad">Release</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="hardware">
+    <div class="section-head">
+      <span class="eyebrow">System architecture</span>
+      <h2 class="h2">Four solenoids, <em>coordinated.</em></h2>
+      <p>Four switched air-paths shape the pull, the rhythm, the trim, and the release. The operator experiences a single coordinated cadence, not four separate parts.</p>
+    </div>
+    <div class="hw">
+      <div class="diagram-box reveal"><img src="assets/four-solenoids-diagram.svg" alt="Pluto 9000 four-solenoid air-path architecture" /></div>
+      <div class="sol-list reveal">
+        <div class="sol"><div class="num">1</div><div><h4>Main Vacuum</h4><p>Manages the primary pull so the draw remains steady and consistent.</p></div></div>
+        <div class="sol"><div class="num">2</div><div><h4>Pulse Rhythm</h4><p>Generates the repeating squeeze-and-rest action that defines the cadence.</p></div></div>
+        <div class="sol"><div class="num">3</div><div><h4>Comfort Trim</h4><p>An additional adjustment layer for refining overall feel.</p></div></div>
+        <div class="sol"><div class="num">4</div><div><h4>Release</h4><p>The measured let-go stage that resets each cycle in a controlled way.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="software">
+    <div class="section-head">
+      <span class="eyebrow">The controller</span>
+      <h2 class="h2">Software designed <em>for the operator.</em></h2>
+      <p>An M5Stack CoreS3 touchscreen keeps the essential controls on the surface. Sessions are logged to an onboard SD card and can be driven live over Wi-Fi.</p>
+    </div>
+    <div class="sw-screens reveal">
+      <div class="screen"><img src="assets/ui-main-controls.svg" alt="Main control screen" loading="lazy"><h4>Main control</h4><p>Suction, pulse, and run controls remain on the surface.</p></div>
+      <div class="screen"><img src="assets/ui-cadence-screen.svg" alt="Cadence screen" loading="lazy"><h4>Comfort cadence</h4><p>The five phases presented as a readable sequence.</p></div>
+      <div class="screen"><img src="assets/ui-settings-screen.svg" alt="Tuning screen" loading="lazy"><h4>Session tuning</h4><p>Direct controls for setup, testing, and operation.</p></div>
+    </div>
+    <div class="sw-feats reveal">
+      <div class="feat"><span class="k">SD LOGGING</span><b>Daily records</b><p>Each run written to <span class="mono">/logs/MM-DD-YYYY.log</span> with a built-in stats viewer.</p></div>
+      <div class="feat"><span class="k">WI-FI CONTROL</span><b>Remote operation</b><p>Joins a router or hosts a <span class="mono">Pluto9000</span> access point for phone control.</p></div>
+      <div class="feat"><span class="k">SAFETY</span><b>Physical e-stop</b><p>A hardware release path that dumps pressure, independent of software.</p></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-head">
+      <span class="eyebrow">Endurance</span>
+      <h2 class="h2">Consistent across the <em>full session.</em></h2>
+      <p>A representative session timeline. The cadence is designed to remain controlled from the first cycle to the last.</p>
+    </div>
+    <div class="timeline reveal">
+      <div class="tl"><span class="mglow"><img src="assets/milky-wave-happy.png" alt="Start of session" loading="lazy"></span><div class="t">00:00</div><div class="d">Session start</div></div>
+      <div class="tl"><span class="mglow"><img src="assets/milky-relaxed.png" alt="Mid session" loading="lazy"></span><div class="t">04:00</div><div class="d">Steady state</div></div>
+      <div class="tl"><span class="mglow"><img src="assets/milky-exhausted-seated.png" alt="Late session" loading="lazy"></span><div class="t">09:00</div><div class="d">Wind-down</div></div>
+      <div class="tl"><span class="mglow"><img src="assets/milky-exhausted-dizzy.png" alt="Session complete" loading="lazy"></span><div class="t">10:00</div><div class="d">Complete</div></div>
+    </div>
+  </section>
+
+  <section class="section" id="brand">
+    <div class="section-head">
+      <span class="eyebrow">Brand</span>
+      <h2 class="h2">Milky &amp; <em>Bessie.</em></h2>
+      <p>A clean, recognizable identity. Milky fronts the product; Bessie rounds out the brand with a lighter touch.</p>
+    </div>
+    <div class="brand-row reveal">
+      <div class="brand-art">
+        <span class="mglow"><img src="assets/milky-thumbs-up.png" alt="Milky mascot" loading="lazy" style="max-height:300px"></span>
+        <svg class="bessie" viewBox="0 0 300 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Bessie, a cartoon cow mascot">
+          <defs>
+            <radialGradient id="bBody" cx="40%" cy="32%" r="75%"><stop offset="0" stop-color="#f6f1e7"/><stop offset="1" stop-color="#d8cfbe"/></radialGradient>
+            <radialGradient id="bSnout" cx="50%" cy="35%" r="70%"><stop offset="0" stop-color="#f0cdbc"/><stop offset="1" stop-color="#d79f8c"/></radialGradient>
+            <radialGradient id="bHorn" cx="40%" cy="30%" r="80%"><stop offset="0" stop-color="#fbf0d6"/><stop offset="1" stop-color="#d8b783"/></radialGradient>
+            <linearGradient id="bEar" x1="0" x2="1"><stop offset="0" stop-color="#f6f1e7"/><stop offset="1" stop-color="#d2c9b8"/></linearGradient>
+          </defs>
+          <ellipse cx="62" cy="120" rx="40" ry="26" fill="url(#bEar)" transform="rotate(-28 62 120)" stroke="#bcb29e" stroke-width="3"/>
+          <ellipse cx="238" cy="120" rx="40" ry="26" fill="url(#bEar)" transform="rotate(28 238 120)" stroke="#bcb29e" stroke-width="3"/>
+          <ellipse cx="64" cy="122" rx="22" ry="13" fill="#e6b6a4" transform="rotate(-28 64 122)"/>
+          <ellipse cx="236" cy="122" rx="22" ry="13" fill="#e6b6a4" transform="rotate(28 236 122)"/>
+          <path d="M96 70 q-16 -34 6 -52 q14 16 8 40 z" fill="url(#bHorn)" stroke="#c2a472" stroke-width="3"/>
+          <path d="M204 70 q16 -34 -6 -52 q-14 16 -8 40 z" fill="url(#bHorn)" stroke="#c2a472" stroke-width="3"/>
+          <ellipse cx="150" cy="150" rx="108" ry="98" fill="url(#bBody)" stroke="#bcb29e" stroke-width="4"/>
+          <path d="M70 92 q26 -10 40 8 q10 22 -14 30 q-30 4 -34 -16 q-2 -16 8 -22z" fill="#2a2620"/>
+          <path d="M214 188 q26 -6 30 16 q2 22 -22 24 q-26 0 -26 -22 q0 -14 18 -18z" fill="#2a2620"/>
+          <path d="M232 96 q14 6 8 22 q-10 12 -22 4 q-8 -12 2 -22 q6 -6 12 -4z" fill="#2a2620"/>
+          <path d="M138 60 q12 -14 24 0 q12 -10 18 6" fill="none" stroke="#2a2620" stroke-width="6" stroke-linecap="round"/>
+          <ellipse cx="116" cy="142" rx="22" ry="25" fill="#fff" stroke="#2a2620" stroke-width="3"/>
+          <circle cx="120" cy="146" r="12" fill="#2a2620"/><circle cx="124" cy="142" r="4" fill="#fff"/>
+          <path d="M96 124 q-8 -6 -14 -6 M104 119 q-6 -8 -12 -10 M114 117 q-2 -9 -6 -13" stroke="#2a2620" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <path d="M168 146 q18 -16 38 -2" fill="none" stroke="#2a2620" stroke-width="5" stroke-linecap="round"/>
+          <path d="M176 134 q-4 -9 -10 -12 M188 131 q-1 -10 -5 -14 M200 132 q2 -9 0 -14" stroke="#2a2620" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <ellipse cx="150" cy="196" rx="62" ry="44" fill="url(#bSnout)" stroke="#cf9684" stroke-width="3"/>
+          <ellipse cx="128" cy="196" rx="9" ry="13" fill="#b97a68"/><ellipse cx="172" cy="196" rx="9" ry="13" fill="#b97a68"/>
+          <path d="M120 222 q30 20 60 0" fill="none" stroke="#b97a68" stroke-width="5" stroke-linecap="round"/>
+          <ellipse cx="134" cy="180" rx="16" ry="8" fill="#ffffff" opacity=".45"/>
+          <ellipse cx="78" cy="186" rx="14" ry="9" fill="#e09a86" opacity=".5"/><ellipse cx="222" cy="186" rx="14" ry="9" fill="#e09a86" opacity=".5"/>
+          <ellipse cx="110" cy="104" rx="34" ry="20" fill="#ffffff" opacity=".4"/>
+          <g transform="translate(214,108)"><g fill="#c8a86a"><circle cx="0" cy="-8" r="7"/><circle cx="8" cy="0" r="7"/><circle cx="0" cy="8" r="7"/><circle cx="-8" cy="0" r="7"/></g><circle r="5" fill="#e2cd9c"/></g>
+        </svg>
+      </div>
+      <div class="brand-copy">
+        <h3>A recognizable face for a precise machine.</h3>
+        <p>Milky is the bottle that anchors the identity — clean, blue, and unmistakable. Bessie completes the pairing and keeps the brand approachable without undercutting the engineering.</p>
+        <p class="mono">// pull · pulse · hold · release</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="specs">
+    <div class="section-head">
+      <span class="eyebrow">Specification</span>
+      <h2 class="h2">At a glance.</h2>
+      <p>Built on an M5Stack CoreS3 and moving toward live hardware. Honest, prototype-stage figures.</p>
+    </div>
+    <div class="spec-table reveal">
+      <div class="r">
+        <div class="c"><span class="k">Controller</span><span class="v">M5Stack CoreS3 / SE</span></div>
+        <div class="c"><span class="k">Pulse range</span><span class="v">40–300 PPM</span></div>
+      </div>
+      <div class="r">
+        <div class="c"><span class="k">Suction range</span><span class="v">0–100%</span></div>
+        <div class="c"><span class="k">Air-paths</span><span class="v">4 × solenoid</span></div>
+      </div>
+      <div class="r">
+        <div class="c"><span class="k">Cadence</span><span class="v">5-phase</span></div>
+        <div class="c"><span class="k">Logging</span><span class="v">SD · daily CSV</span></div>
+      </div>
+      <div class="r">
+        <div class="c"><span class="k">Control</span><span class="v">Touch + Wi-Fi</span></div>
+        <div class="c"><span class="k">Safety</span><span class="v">Physical e-stop</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="contact" style="border-bottom:0">
+    <div class="section-head">
+      <span class="eyebrow">Next step</span>
+      <h2 class="h2">Request a <em>demonstration.</em></h2>
+      <p>Use this page to present the concept, the software direction, and the adjustable cadence. The next step is proving the full hardware flow end to end.</p>
+    </div>
+    <div class="contact">
+      <div class="panel">
+        <span class="eyebrow" style="display:block;margin-bottom:18px">What it delivers</span>
+        <div class="glance">
+          <div class="row"><span class="tick">01</span><div><b>Precision controller</b><span>Direct control of suction, pulse, hold, and release.</span></div></div>
+          <div class="row"><span class="tick">02</span><div><b>Four coordinated solenoids</b><span>Main vacuum, pulse rhythm, comfort trim, and release.</span></div></div>
+          <div class="row"><span class="tick">03</span><div><b>Honest live demonstration</b><span>A faithful view of how the cadence responds.</span></div></div>
+          <div class="row"><span class="tick">04</span><div><b>Prototype-ready path</b><span>Controller, pump, valves, logging, and release.</span></div></div>
+        </div>
+      </div>
+      <div class="panel">
+        <form action="mailto:pingywon@gmail.com" method="post" enctype="text/plain">
+          <label>Name<input type="text" name="name" placeholder="Your name"></label>
+          <label>Email<input type="email" name="email" placeholder="you@example.com"></label>
+          <label>Interest<input type="text" name="interest" placeholder="Prototype demo, product info, controller build…"></label>
+          <label>Message<textarea name="message" placeholder="Tell us what you would like to see from the Pluto 9000."></textarea></label>
+          <button class="btn primary" type="submit" style="justify-content:center">Request a demo</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <hr class="rule">
+  <footer class="footer">
+    <div>PulseCore · Pluto 9000 — precision milking cadence control</div>
+    <div class="mono">Engineered around the cadence</div>
+  </footer>
+</main>
+
+<script>
+(function(){
+  "use strict";
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var root=document.documentElement;
+  function wave(ms,ppm){if(ppm<=0)return 0;var p=60000/ppm,ph=(ms%p)/p,v=Math.sin(ph*2*Math.PI);return v<0?0:v;}
+  var vacRange=document.getElementById('vacRange'),ppmRange=document.getElementById('ppmRange'),
+      vacVal=document.getElementById('vacVal'),ppmVal=document.getElementById('ppmVal'),
+      roVac=document.getElementById('roVac'),roPpm=document.getElementById('roPpm'),roHz=document.getElementById('roHz'),
+      runBtn=document.getElementById('runBtn'),runStatus=document.getElementById('runStatus'),
+      fluid=document.getElementById('fluid'),pumpLabel=document.getElementById('pumpLabel'),
+      phaseName=document.getElementById('phaseName'),
+      cadCells=[].slice.call(document.querySelectorAll('#cadence .cad'));
+  var phaseFull=['Pressure','Vacuum Pull','Hold','Pulse','Release'];
+  var vacTarget=+vacRange.value,ppm=+ppmRange.value,vacActual=0,running=false,lastPhase=-1;
+  function fillTrack(el){var mn=+el.min,mx=+el.max,v=+el.value;el.style.setProperty('--fill',((v-mn)/(mx-mn)*100)+'%');}
+  function syncLabels(){vacTarget=+vacRange.value;ppm=+ppmRange.value;vacVal.textContent=vacTarget+'%';ppmVal.textContent=ppm+' PPM';
+    roVac.textContent=vacTarget+'%';roPpm.textContent=ppm;roHz.textContent=(ppm/60).toFixed(1);fillTrack(vacRange);fillTrack(ppmRange);}
+  vacRange.addEventListener('input',syncLabels);ppmRange.addEventListener('input',syncLabels);
+  runBtn.addEventListener('click',function(){running=!running;runBtn.classList.toggle('on',running);
+    runBtn.textContent=running?'■  STOP':'▶  START';runStatus.textContent=running?'Running — cadence active':'Idle — start to run the cadence';
+    pumpLabel.style.color=running?'var(--steel-2)':'';});
+  var cv=document.getElementById('wave'),ctx=cv.getContext('2d'),dpr=window.devicePixelRatio||1;
+  function sizeCanvas(){var r=cv.getBoundingClientRect();cv.width=r.width*dpr;cv.height=r.height*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);}
+  var mini=document.getElementById('miniWave'),mctx=mini.getContext('2d');
+  function sizeMini(){var r=mini.getBoundingClientRect();mini.width=r.width*dpr;mini.height=r.height*dpr;mctx.setTransform(dpr,0,0,dpr,0,0);}
+  window.addEventListener('resize',function(){sizeCanvas();sizeMini();});
+  function drawWave(now){
+    var r=cv.getBoundingClientRect(),w=r.width,h=r.height;ctx.clearRect(0,0,w,h);
+    ctx.strokeStyle='rgba(40,48,59,.8)';ctx.lineWidth=1;
+    for(var i=1;i<4;i++){var y=h*i/4;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();}
+    var amp=(vacActual/100)*(h*0.72),base=h-14,msPerPx=4000/w;
+    var grad=ctx.createLinearGradient(0,0,w,0);grad.addColorStop(0,'#6f9ab8');grad.addColorStop(1,'#c8a86a');
+    ctx.beginPath();
+    for(var px=0;px<=w;px++){var t=now-(w-px)*msPerPx,v=running?wave(t,ppm):0,y=base-v*amp;if(px===0)ctx.moveTo(px,y);else ctx.lineTo(px,y);}
+    ctx.lineTo(w,h);ctx.lineTo(0,h);ctx.closePath();ctx.fillStyle='rgba(200,168,106,.06)';ctx.fill();
+    ctx.beginPath();
+    for(var px2=0;px2<=w;px2++){var t2=now-(w-px2)*msPerPx,v2=running?wave(t2,ppm):0,y2=base-v2*amp;if(px2===0)ctx.moveTo(px2,y2);else ctx.lineTo(px2,y2);}
+    ctx.strokeStyle=grad;ctx.lineWidth=2.6;ctx.lineJoin='round';ctx.lineCap='round';ctx.stroke();
+    var vN=running?wave(now,ppm):0,yN=base-vN*amp;ctx.beginPath();ctx.arc(w-2,yN,3.5,0,7);ctx.fillStyle='#ece5d7';ctx.fill();
+  }
+  function drawMini(now){var r=mini.getBoundingClientRect(),w=r.width,h=r.height;mctx.clearRect(0,0,w,h);
+    var amp=h*0.4,base=h*0.5+amp,msPerPx=4000/w;mctx.beginPath();
+    for(var px=0;px<=w;px++){var t=now-(w-px)*msPerPx,v=wave(t,46),y=base-v*amp*2;if(px===0)mctx.moveTo(px,y);else mctx.lineTo(px,y);}
+    mctx.strokeStyle='#c8a86a';mctx.lineWidth=2.2;mctx.lineJoin='round';mctx.lineCap='round';mctx.stroke();}
+  function loop(now){
+    var goal=running?vacTarget:0;vacActual+=(goal-vacActual)*0.08;if(Math.abs(vacActual-goal)<0.2)vacActual=goal;
+    fluid.style.height=(8+vacActual*0.82)+'%';
+    var beat=running?wave(now,ppm)*(vacActual/100):0;root.style.setProperty('--pulse',beat.toFixed(3));
+    if(running){var period=60000/ppm,idx=Math.floor(now/period)%5;if(idx!==lastPhase){lastPhase=idx;phaseName.textContent=phaseFull[idx];cadCells.forEach(function(c,i){c.classList.toggle('active',i===idx);});}}
+    else if(lastPhase!==-1){lastPhase=-1;cadCells.forEach(function(c){c.classList.remove('active');});phaseName.textContent='Idle';}
+    drawWave(now);drawMini(now);requestAnimationFrame(loop);
+  }
+  if('IntersectionObserver' in window && !reduce){
+    var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.14});
+    document.querySelectorAll('.reveal').forEach(function(el){io.observe(el);});
+  } else {document.querySelectorAll('.reveal').forEach(function(el){el.classList.add('in');});}
+  function init(){sizeCanvas();sizeMini();syncLabels();requestAnimationFrame(loop);}
+  if(document.readyState!=='loading')init();else document.addEventListener('DOMContentLoaded',init);
+})();
+</script>
+</body>
+</html>

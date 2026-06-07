@@ -3,241 +3,55 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>PulseCore Pluto 9000 | Smart Milking Control</title>
-<meta name="description" content="PulseCore Pluto 9000 is a smart milking controller with independent suction, pulse, hold, and release controls, live software feedback, and four-solenoid cadence control." />
+<title>Pluto 9000 — Site Versions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500..900;1,9..144,500..700&family=Hanken+Grotesk:wght@400;600;800&family=Space+Mono&display=swap" rel="stylesheet">
 <style>
-:root{
-  color-scheme:dark;
-  --bg:#070b10;--panel:#111821;--card:#172232;--card2:#1e2b3b;--text:#f7f3e9;--muted:#a5b6c6;
-  --border:#263548;--accent:#19a8ff;--accent2:#8adfff;--cream:#f4efe4;--ink:#101722;
-  --shadow:0 22px 70px rgba(0,0,0,.30);--radius:28px;--wide:1280px;
-}
-body[data-theme="light"]{
-  color-scheme:light;
-  --bg:#eef5fb;--panel:#fff;--card:#fff;--card2:#edf4fb;--text:#101722;--muted:#536b80;
-  --border:#c7d8e8;--accent:#079ff4;--accent2:#087fc2;--cream:#101722;--ink:#f7f3e9;
-  --shadow:0 18px 55px rgba(16,23,34,.09);
-}
-*{box-sizing:border-box} html{scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;line-height:1.55}
-img{display:block;max-width:100%} a{color:inherit;text-decoration:none} button,input,textarea{font:inherit}
-.wrap{width:min(calc(100% - 28px),var(--wide));margin:auto}
-.topbar{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(15px);border-bottom:1px solid var(--border)}
-.nav{min-height:78px;display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap}
-.brand{display:flex;align-items:center;gap:14px}.mark{width:46px;height:46px;border-radius:14px;background:var(--accent);color:#061119;display:grid;place-items:center;font-weight:950}.brand b,.brand span{display:block}.brand span{font-size:.82rem;color:var(--muted)}
-.links{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.links a,.theme,.cta{min-height:42px;border:1px solid var(--border);border-radius:999px;padding:0 16px;background:var(--panel);color:var(--text);display:inline-flex;align-items:center;cursor:pointer}
-.cta{background:var(--accent);border-color:transparent;color:#061119;font-weight:850}
-main{padding:24px 0 80px}.hero{display:grid;grid-template-columns:1.15fr .85fr;gap:22px;align-items:stretch}
-.box,.hero-copy,.hero-art{border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
-.hero-copy{position:relative;background:var(--panel);padding:clamp(30px,4vw,56px)}.hero-copy:after{content:"";position:absolute;right:-70px;top:-70px;width:230px;height:230px;border-radius:50%;background:rgba(25,168,255,.10);filter:blur(10px)}
-.kicker{display:inline-flex;padding:10px 14px;border-radius:999px;background:rgba(25,168,255,.12);border:1px solid rgba(25,168,255,.26);color:var(--accent2);font-size:.84rem;font-weight:850;letter-spacing:.08em;text-transform:uppercase;margin-bottom:18px}
-h1{font-size:clamp(2.75rem,7vw,5.45rem);line-height:.95;letter-spacing:-.055em;margin:0}h1 span{display:block;color:var(--accent)}
-.lead{max-width:780px;margin:18px 0 0;color:var(--muted);font-size:1.12rem}
-.hero-grid,.cards3,.cards4,.cards2,.software,.operators,.stats,.story,.demo,.contact{display:grid;gap:18px}
-.hero-grid{grid-template-columns:repeat(3,1fr);margin-top:24px}.cards3,.software,.operators{grid-template-columns:repeat(3,1fr)}.cards4,.stats{grid-template-columns:repeat(4,1fr)}.cards2{grid-template-columns:repeat(2,1fr)}.story,.demo,.contact{grid-template-columns:1.05fr .95fr}
-.card{background:var(--card);border:1px solid var(--border);border-radius:22px;padding:20px;box-shadow:var(--shadow)}.card h3{margin:0 0 8px;font-size:1.14rem}.card p,.card span{margin:0;color:var(--muted);font-size:.96rem}
-.hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}.btn{min-height:50px;border:1px solid var(--border);border-radius:16px;padding:0 20px;background:var(--card);color:var(--text);display:inline-flex;align-items:center;font-weight:850}.btn.primary{background:var(--accent);color:#061119;border-color:transparent}
-.hero-art{background:linear-gradient(180deg,#1da9ff 0 25%,#f4efe4 25% 100%);color:#101722;padding:22px;display:grid;gap:18px;align-content:space-between}.hero-art b{font-size:1.18rem}.hero-art p{margin:0;color:#263646}.hero-art img{max-height:510px;object-fit:contain;justify-self:center;filter:drop-shadow(0 24px 26px rgba(0,0,0,.18))}
-.note{background:rgba(255,255,255,.74);border:1px solid rgba(17,24,38,.10);border-radius:22px;padding:16px 18px}
-.section{padding-top:30px;margin-top:30px}.head{display:flex;justify-content:space-between;align-items:end;gap:18px;margin-bottom:20px}.head h2{margin:0;font-size:clamp(2rem,3vw,3.15rem);line-height:1;letter-spacing:-.045em}.head p{margin:0;max-width:720px;color:var(--muted)}
-.stat{display:block;font-size:clamp(1.8rem,4vw,3rem);line-height:1;font-weight:950;letter-spacing:-.04em;color:var(--accent);margin-bottom:8px}
-.panel{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px}.paper{background:var(--cream);color:var(--ink);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow)}.paper p{color:color-mix(in srgb,var(--ink) 78%,transparent)}
-.screen{display:grid;gap:14px}.screen img,.rail img{border-radius:18px;border:1px solid var(--border);background:#000}.rail{display:grid;gap:18px;align-content:start}.rail img{padding:12px;max-height:530px;width:100%;object-fit:contain}
-.demo-controls{display:grid;gap:16px}.toolbar{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}.pill{min-height:40px;border:1px solid var(--border);border-radius:999px;padding:0 14px;display:inline-flex;align-items:center;background:var(--card2);font-weight:850}
-.demo-buttons{display:flex;gap:10px;flex-wrap:wrap}.demo-buttons button{min-height:40px;border-radius:999px;border:1px solid var(--border);background:var(--card2);color:var(--text);padding:0 14px;cursor:pointer;font-weight:850}.demo-buttons .primary{background:var(--accent);color:#061119;border-color:transparent}
-.control{border:1px solid var(--border);border-radius:20px;background:color-mix(in srgb,var(--card) 82%,var(--accent) 5%);padding:16px}.control-head{display:flex;justify-content:space-between;margin-bottom:8px}.control-head span{color:var(--accent2);font-weight:950}.control p{margin:0 0 10px;color:var(--muted);font-size:.92rem}.control input{width:100%;accent-color:var(--accent)}
-.stage{border:1px solid var(--border);border-radius:24px;background:linear-gradient(180deg,color-mix(in srgb,var(--card) 86%,var(--accent) 6%),var(--card));padding:18px}.stage-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}.phase-name{color:var(--accent2);font-weight:950}
-.chamber-wrap{min-height:280px;display:grid;place-items:center;margin-bottom:16px}.chamber{position:relative;width:min(100%,360px);height:260px;border-radius:42px;border:1px solid var(--border);background:#0d131a;overflow:hidden}
-.chamber:before,.chamber:after{content:"";position:absolute;top:28px;bottom:28px;width:72px;border-radius:28px;background:linear-gradient(180deg,rgba(126,231,255,.08),rgba(255,255,255,.03));border:1px solid rgba(126,231,255,.14);transition:.25s}.chamber:before{left:34px;transform:var(--left-transform,scaleX(1));box-shadow:var(--left-shadow,none)}.chamber:after{right:34px;transform:var(--right-transform,scaleX(1));box-shadow:var(--right-shadow,none)}
-.center{position:absolute;left:50%;top:18px;bottom:18px;width:130px;transform:translateX(-50%);border-radius:42px;background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.02)),linear-gradient(180deg,#171d26,#0a0d13 62%,#151c25);border:2px solid rgba(255,248,239,.70);box-shadow:inset 0 0 0 2px rgba(0,0,0,.45),inset 0 0 24px rgba(255,255,255,.04),0 0 22px rgba(126,231,255,.16);overflow:hidden;transition:.22s}
-.window{position:absolute;left:50%;top:16px;bottom:16px;width:58px;transform:translateX(-50%);border-radius:26px;background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.01)),linear-gradient(180deg,#07090f,#020306);border:2px solid rgba(255,248,239,.62);overflow:hidden;box-shadow:inset 0 0 18px rgba(126,231,255,.07),0 0 18px rgba(126,231,255,.12)}
-.beam{position:absolute;left:50%;bottom:12px;width:20px;height:56%;transform:translateX(-50%);border-radius:999px;background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(126,231,255,.88) 38%,rgba(255,113,188,.56));box-shadow:0 0 22px rgba(126,231,255,.28);transition:.22s}
-.core{position:absolute;left:50%;top:50%;width:26px;height:26px;transform:translate(-50%,-50%);border-radius:50%;background:radial-gradient(circle at 35% 32%,#fff,rgba(126,231,255,.94) 40%,rgba(255,113,188,.84));box-shadow:0 0 22px rgba(126,231,255,.30);transition:.22s}
-.bars{position:absolute;inset:18px 9px;display:grid;align-content:center;gap:8px}.bars span{display:block;height:6px;border-radius:999px;background:linear-gradient(90deg,rgba(126,231,255,.18),#fff,rgba(255,113,188,.30));transform:scaleX(.72);transition:.22s}
-.phases{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}.phases div{min-height:52px;border-radius:16px;border:1px solid var(--border);display:grid;place-items:center;text-align:center;padding:8px;color:var(--muted);font-size:.86rem;background:rgba(255,255,255,.02);transition:.22s}.phases .active{color:var(--text);border-color:rgba(24,168,255,.38);background:rgba(24,168,255,.14);transform:translateY(-2px)}
-.graph{margin-top:16px;border:1px solid var(--border);border-radius:22px;padding:16px;background:rgba(255,255,255,.02)}.graph svg{width:100%;height:180px;display:block}.gridline{stroke:color-mix(in srgb,var(--border) 80%,transparent)}.fill{fill:rgba(24,168,255,.12)}.line{fill:none;stroke:var(--accent);stroke-width:4.8;stroke-linecap:round;stroke-linejoin:round}.accent{fill:none;stroke:rgba(255,255,255,.44);stroke-width:2.2;stroke-dasharray:6 8}
-.legend{margin-top:12px;color:var(--muted);font-size:.88rem;display:flex;gap:12px;flex-wrap:wrap}.legend span:before{content:"";display:inline-block;width:14px;height:14px;border-radius:50%;margin-right:8px;vertical-align:-2px;background:var(--accent)}.legend span:nth-child(2):before{background:rgba(255,255,255,.44)}
-.phase-list{display:grid;gap:12px}.phase-item{display:grid;grid-template-columns:44px 1fr;gap:14px;padding:14px;border-radius:18px;border:1px solid color-mix(in srgb,var(--ink) 12%,transparent);background:rgba(255,255,255,.48)}.num{width:44px;height:44px;border-radius:14px;background:var(--accent);color:#061119;display:grid;place-items:center;font-weight:950}.phase-item b{display:block}.solenoid h3 span{width:28px;height:28px;border-radius:50%;display:inline-grid;place-items:center;background:var(--accent);color:#061119;margin-right:8px;font-weight:950;font-size:.88rem}.diagram{border-radius:20px;background:#fff}
-form{display:grid;gap:12px}label{display:grid;gap:7px;color:var(--muted);font-weight:750;font-size:.9rem}input,textarea{border:1px solid var(--border);background:var(--card);color:var(--text);border-radius:16px;padding:13px 14px}textarea{min-height:120px;resize:vertical}
-.footer{padding:28px 0 10px;color:var(--muted);font-size:.92rem}.footer-panel{border-top:1px solid var(--border);padding-top:18px;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
-@media(max-width:1120px){.hero,.demo,.story,.contact{grid-template-columns:1fr}.cards3,.software,.operators,.stats,.cards4{grid-template-columns:repeat(2,1fr)}.hero-grid{grid-template-columns:1fr}}
-@media(max-width:760px){.head{display:grid}.cards2,.cards3,.cards4,.software,.operators,.stats{grid-template-columns:1fr}.phases{grid-template-columns:1fr}.hero-copy,.hero-art,.panel,.paper{padding:20px}h1{font-size:2.65rem}.lead{font-size:1rem}}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:
+  radial-gradient(900px 600px at 78% -8%,rgba(25,168,255,.16),transparent 60%),
+  radial-gradient(760px 560px at 8% 18%,rgba(255,77,141,.12),transparent 60%),
+  linear-gradient(180deg,#06070a,#0a0d13);
+  color:#f5f0e6;font-family:"Hanken Grotesk",system-ui,sans-serif;display:grid;place-items:center;padding:40px}
+.box{width:min(880px,100%)}
+.eyebrow{font-family:"Space Mono",monospace;letter-spacing:.24em;text-transform:uppercase;font-size:.74rem;color:#ff8fb6}
+h1{font-family:"Fraunces",serif;font-weight:900;font-size:clamp(2.4rem,6vw,4rem);line-height:1;letter-spacing:-.03em;margin:12px 0 8px}
+p.sub{color:#9bb0c4;max-width:560px;margin:0 0 34px}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:680px){.cards{grid-template-columns:1fr}}
+.card{display:block;border:1px solid #263548;border-radius:22px;padding:26px;background:#10131c;transition:.2s}
+.card:hover{transform:translateY(-4px);border-color:#19a8ff;box-shadow:0 0 60px rgba(25,168,255,.25)}
+.card.pro:hover{border-color:#c8a86a;box-shadow:0 0 60px rgba(200,168,106,.22)}
+.tag{font-family:"Space Mono",monospace;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:#8adfff}
+.card.pro .tag{color:#e2cd9c}
+.card h2{font-family:"Fraunces",serif;font-weight:700;font-size:1.6rem;margin:10px 0 8px}
+.card p{margin:0;color:#9bb0c4;font-size:.95rem}
+.go{display:inline-flex;margin-top:18px;font-weight:800;color:#19a8ff}
+.card.pro .go{color:#c8a86a}
+.foot{margin-top:30px;font-family:"Space Mono",monospace;color:#6b7e93;font-size:.8rem}
 </style>
 </head>
 <body>
-<header class="topbar">
-  <div class="wrap nav">
-    <a class="brand" href="#top"><div class="mark">P9</div><div><b>PulseCore</b><span>Pluto 9000 smart milking control</span></div></a>
-    <div class="links">
-      <nav><a href="#demo">Demo</a><a href="#software">Software</a><a href="#hardware">Hardware</a><a href="#contact">Contact</a></nav>
-      <button class="theme" id="themeToggle" type="button">Light / Dark</button>
-      <a class="cta" href="#demo">Try Demo</a>
+  <div class="box">
+    <span class="eyebrow">PulseCore · Pluto 9000</span>
+    <h1>Two site directions.</h1>
+    <p class="sub">The same product, two distinct treatments. Open either to explore the live, hands-on cadence demo.</p>
+    <div class="cards">
+      <a class="card neon" href="pluto9000-neon.html">
+        <span class="tag">Version A</span>
+        <h2>Neon</h2>
+        <p>Late-night, bold, and playful. Electric blue + hot pink, a pulse that drives the whole page, and a cheeky tone.</p>
+        <span class="go">Open neon →</span>
+      </a>
+      <a class="card pro" href="pluto9000-professional.html">
+        <span class="tag">Version B</span>
+        <h2>Professional</h2>
+        <p>Restrained and editorial. Charcoal + warm brass, IBM Plex type, quiet motion, and engineering-first copy.</p>
+        <span class="go">Open professional →</span>
+      </a>
     </div>
+    <div class="foot">// both share the same hardware-honest two-control demo</div>
   </div>
-</header>
-
-<main class="wrap">
-  <section class="hero" id="top">
-    <div class="hero-copy">
-      <div class="kicker">Premium milking rhythm control</div>
-      <h1>Pluto 9000 <span>by PulseCore.</span></h1>
-      <p class="lead">The Pluto 9000 is a smart milking controller built for a smoother, more adjustable session. It gives the operator independent control over primary suction, pulse strength, pulse speed, hold, and release so the machine can be tuned for comfort instead of locked into one harsh rhythm.</p>
-      <div class="hero-grid">
-        <div class="card"><b>Independent control</b><span>Separate settings for suction, pulse, hold, and release.</span></div>
-        <div class="card"><b>Visible cadence</b><span>Live software feedback shows how the session is moving.</span></div>
-        <div class="card"><b>Better release</b><span>A deliberate let-go stage helps the cycle feel calmer and more natural.</span></div>
-      </div>
-      <div class="hero-actions"><a class="btn primary" href="#demo">Use the live demo</a><a class="btn" href="#hardware">View the control system</a></div>
-    </div>
-    <aside class="hero-art">
-      <div><b>Meet Milky.</b><p>Milky is the face of the Pluto 9000: clean, blue, cream, memorable, and easy to recognize. He sets the tone at the top of the site, then the product story takes over.</p></div>
-      <img src="assets/milky-hero-happy.png" alt="Milky mascot smiling and giving a thumbs up">
-      <div class="note"><p>Pluto 9000 is built around a simple idea: a milker should not just pull. It should pull, pulse, hold, and release with intention.</p></div>
-    </aside>
-  </section>
-
-  <section class="section">
-    <div class="head"><h2>Control the session, not just the motor.</h2><p>A basic milker gives the operator limited control. Pluto 9000 separates the major parts of the session so the full feel can be shaped: how pressure builds, how vacuum pulls, how long the cycle holds, how strongly it pulses, and how gently it releases.</p></div>
-    <div class="stats">
-      <div class="card"><span class="stat">0–100</span><p>Relative operator controls for suction, pulse strength, hold, and release.</p></div>
-      <div class="card"><span class="stat">4</span><p>Solenoid-controlled air-path actions for a more refined cadence.</p></div>
-      <div class="card"><span class="stat">5</span><p>Session phases: pressure, vacuum pull, hold, pulse, and release.</p></div>
-      <div class="card"><span class="stat">Live</span><p>On-screen values, service checks, demo behavior, and session feedback.</p></div>
-    </div>
-  </section>
-
-  <section class="section" id="demo">
-    <div class="head"><h2>Hands-on rhythm demo.</h2><p>Adjust each setting and watch the chamber, center unit, graph, and phase strip respond together. This is the product in one view: independent controls shaping one coordinated milking cadence.</p></div>
-    <div class="demo">
-      <div class="panel demo-controls">
-        <div class="toolbar"><div class="pill">Live adjustable cadence</div><div class="demo-buttons"><button id="playPauseBtn" class="primary" type="button">Pause motion</button><button id="resetBtn" type="button">Reset</button></div></div>
-        <div class="control"><div class="control-head"><b>Primary Suction</b><span id="vacuumVal">68%</span></div><p>Main pull level for the session.</p><input id="vacuumRange" type="range" min="0" max="100" value="68"></div>
-        <div class="control"><div class="control-head"><b>Pulse Strength</b><span id="pulseVal">58%</span></div><p>How pronounced the squeeze-and-rest motion feels.</p><input id="pulseRange" type="range" min="0" max="100" value="58"></div>
-        <div class="control"><div class="control-head"><b>Pulse Speed</b><span id="speedVal">46 PPM</span></div><p>Overall pace of the repeating cadence.</p><input id="speedRange" type="range" min="20" max="80" value="46"></div>
-        <div class="control"><div class="control-head"><b>Pulse Hold</b><span id="holdVal">35%</span></div><p>Dwell time between pull and pulse.</p><input id="holdRange" type="range" min="0" max="100" value="35"></div>
-        <div class="control"><div class="control-head"><b>Release</b><span id="releaseVal">72%</span></div><p>Soft let-go strength at the end of the cycle.</p><input id="releaseRange" type="range" min="0" max="100" value="72"></div>
-      </div>
-      <div class="panel">
-        <div class="stage">
-          <div class="stage-top"><b>Live comfort cadence</b><span class="phase-name" id="phaseLabel">Pressure</span></div>
-          <div class="chamber-wrap"><div class="chamber" id="chamberVisual"><div class="center" id="centerUnit"><div class="window" id="centerWindow"><div class="beam" id="centerBeam"></div><div class="bars" id="centerBars"><span></span><span></span><span></span><span></span><span></span><span></span></div><div class="core" id="centerCore"></div></div></div></div></div>
-          <div class="phases" id="phaseStrip"><div class="active">Pressure</div><div>Vacuum Pull</div><div>Hold</div><div>Pulse</div><div>Release</div></div>
-          <div class="graph"><svg viewBox="0 0 760 180" preserveAspectRatio="none"><g><line class="gridline" x1="0" y1="30" x2="760" y2="30"></line><line class="gridline" x1="0" y1="75" x2="760" y2="75"></line><line class="gridline" x1="0" y1="120" x2="760" y2="120"></line><line class="gridline" x1="0" y1="165" x2="760" y2="165"></line></g><path id="graphFill" class="fill"></path><path id="graphAccent" class="accent"></path><path id="graphLine" class="line"></path></svg><div class="legend"><span>Comfort curve</span><span>Phase reference</span></div></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="section" id="software">
-    <div class="head"><h2>Software built for the operator.</h2><p>The controller interface keeps the important controls visible. The operator can see the current settings, check major functions, tune the rhythm, and return to a known comfort profile without digging through unnecessary menus.</p></div>
-    <div class="software">
-      <article class="card screen"><img src="assets/ui-main-controls.svg" alt="Pluto 9000 main control screen"><h3>Main control</h3><p>Primary suction, pulse rhythm, start controls, and quick navigation stay on the surface where they belong.</p></article>
-      <article class="card screen"><img src="assets/ui-cadence-screen.svg" alt="Pluto 9000 comfort cadence screen"><h3>Comfort cadence</h3><p>Pressure, vacuum pull, hold, pulse, and release are shown as a readable sequence, not hidden behavior.</p></article>
-      <article class="card screen"><img src="assets/ui-settings-screen.svg" alt="Pluto 9000 tuning screen"><h3>Session tuning</h3><p>Large values and direct controls make the machine easy to adjust during setup, testing, and real operation.</p></article>
-    </div>
-    <div class="story" style="margin-top:18px">
-      <div class="panel"><div class="cards2">
-        <div class="card"><h3>Fast adjustments</h3><p>Large controls make quick changes simple, letting the operator shape the feel without slowing down the workflow.</p></div>
-        <div class="card"><h3>Clear feedback</h3><p>Live motion on the screen shows what the machine is doing, making the session feel visible and controlled.</p></div>
-        <div class="card"><h3>Service checks</h3><p>Individual test actions help verify pump behavior, valve response, and release behavior before a full session.</p></div>
-        <div class="card"><h3>Session records</h3><p>The system is designed around readable values, operating state, and event history so the machine can be understood after the run.</p></div>
-      </div></div>
-      <div class="rail"><img src="assets/milky-wave-happy.png" alt="Mascot illustration"></div>
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="head"><h2>The five-part comfort cadence.</h2><p>The Pluto 9000 rhythm is simple to explain because the phases are clear. Each part has a job, and the software gives the operator a way to tune the way those parts work together.</p></div>
-    <div class="story">
-      <div class="paper"><div class="phase-list">
-        <div class="phase-item"><div class="num">1</div><div><b>Pressure</b><span>A controlled build that starts the cycle cleanly instead of abruptly.</span></div></div>
-        <div class="phase-item"><div class="num">2</div><div><b>Vacuum Pull</b><span>The working draw phase where suction is steady, readable, and adjustable.</span></div></div>
-        <div class="phase-item"><div class="num">3</div><div><b>Hold</b><span>A deliberate dwell that helps the motion feel composed rather than jumpy.</span></div></div>
-        <div class="phase-item"><div class="num">4</div><div><b>Pulse</b><span>The repeating squeeze-and-rest behavior that creates the familiar milking rhythm.</span></div></div>
-        <div class="phase-item"><div class="num">5</div><div><b>Release</b><span>The let-go moment that helps the session reset more naturally between cycles.</span></div></div>
-      </div></div>
-      <div class="rail"><img src="assets/milky-relaxed.png" alt="Mascot illustration"></div>
-    </div>
-  </section>
-
-  <section class="section" id="hardware">
-    <div class="head"><h2>Four solenoids. One smoother system.</h2><p>Pluto 9000 uses four controlled air-path actions to shape the rhythm. The operator does not experience them as separate parts; the operator experiences better control, cleaner pulsing, softer transitions, and a release that feels deliberate.</p></div>
-    <div class="story">
-      <div class="paper"><h3 style="margin-top:0">Air-path control overview</h3><p style="margin-bottom:14px">The four actions work together to control the pull, rhythm, trim, and release behavior of the session.</p><img class="diagram" src="assets/four-solenoids-diagram.svg" alt="Pluto 9000 four-solenoid architecture overview"></div>
-      <div class="cards2">
-        <div class="card solenoid"><h3><span>1</span>Main Vacuum Control</h3><p>Manages the primary pull so the session feels steady, confident, and controlled.</p></div>
-        <div class="card solenoid"><h3><span>2</span>Pulse Rhythm Control</h3><p>Creates the repeating squeeze-and-rest movement that gives the system its smooth cadence.</p></div>
-        <div class="card solenoid"><h3><span>3</span>Comfort Trim Control</h3><p>Adds another adjustment layer for refining the feel of the machine.</p></div>
-        <div class="card solenoid"><h3><span>4</span>Release Control</h3><p>Provides the soft let-go stage that helps the cycle reset naturally.</p></div>
-      </div>
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="head"><h2>Built for testing, tuning, and real use.</h2><p>The current Pluto 9000 direction is practical: prove the pump, valves, release behavior, software controls, logging, service checks, and enclosure workflow before turning the controller into a final polished build.</p></div>
-    <div class="operators">
-      <div class="card"><h3>Diagnostic mode</h3><p>Service controls are intended to fire individual actions for setup, demos, and troubleshooting.</p></div>
-      <div class="card"><h3>Event history</h3><p>Button presses, errors, operating state, and key parameters can be recorded for review.</p></div>
-      <div class="card"><h3>Physical safety</h3><p>A real emergency release remains a physical requirement, separate from software convenience.</p></div>
-    </div>
-    <div class="story" style="margin-top:18px">
-      <div class="panel"><div class="cards2">
-        <div class="card"><h3>Clean wiring</h3><p>The controller, pump driver, MOSFET valve drivers, buck converter, and valve wiring need to be clean enough to service.</p></div>
-        <div class="card"><h3>Readable enclosure</h3><p>The box should make ports, power, release, and control access obvious without making the system feel homemade.</p></div>
-        <div class="card"><h3>Repeatable demo</h3><p>The demo mode should clearly show pump response, solenoid response, pulse timing, and release behavior.</p></div>
-        <div class="card"><h3>Future PCB path</h3><p>Once the prototype is proven, the same architecture can be converted into a purpose-built board.</p></div>
-      </div></div>
-      <div class="rail"><img src="assets/milky-tired-standing.png" alt="Mascot illustration"></div>
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="head"><h2>The release is the difference.</h2><p>Any milker can pull. Pluto 9000 is built to pull and let go with intention. The release stage helps keep the session from feeling like one constant tug and gives the cadence a more complete, more comfortable shape.</p></div>
-    <div class="cards3">
-      <div class="card"><h3>Less abrupt</h3><p>A controlled release softens the transition out of the working pull.</p></div>
-      <div class="card"><h3>More complete</h3><p>Each cycle has a clear start, working phase, pulse behavior, and reset point.</p></div>
-      <div class="card"><h3>More premium</h3><p>The machine feels refined because the end of the cycle is controlled as carefully as the beginning.</p></div>
-    </div>
-    <div class="cards2" style="margin-top:18px"><div class="rail"><img src="assets/milky-exhausted-seated.png" alt="Mascot illustration"></div><div class="rail"><img src="assets/milky-exhausted-dizzy.png" alt="Mascot illustration"></div></div>
-  </section>
-
-  <section class="section" id="contact">
-    <div class="head"><h2>Request a Pluto 9000 demo.</h2><p>Use this test site to present the concept, show the software direction, and demonstrate the adjustable cadence. The next step is proving the full hardware flow with the controller, pump, solenoids, release path, and service screens working together.</p></div>
-    <div class="contact">
-      <div class="paper"><h3 style="margin-top:0">Pluto 9000 at a glance</h3><div class="phase-list">
-        <div class="phase-item"><div class="num">✓</div><div><b>Smart controller interface</b><span>Clear software controls for suction, pulse, hold, and release.</span></div></div>
-        <div class="phase-item"><div class="num">✓</div><div><b>Four solenoid actions</b><span>Main vacuum, pulse rhythm, comfort trim, and release control.</span></div></div>
-        <div class="phase-item"><div class="num">✓</div><div><b>Hands-on demo</b><span>Interactive visual demonstration of how the cadence responds.</span></div></div>
-        <div class="phase-item"><div class="num">✓</div><div><b>Prototype-ready build path</b><span>Controller, pump, valves, service checks, logging, and release.</span></div></div>
-      </div></div>
-      <div class="panel"><form action="mailto:contact@pulsecore.local" method="post" enctype="text/plain">
-        <label>Name<input type="text" name="name" placeholder="Your name"></label>
-        <label>Email<input type="email" name="email" placeholder="you@example.com"></label>
-        <label>Interest<input type="text" name="interest" placeholder="Prototype demo, product info, controller build..."></label>
-        <label>Message<textarea name="message" placeholder="Tell us what you want to see from the Pluto 9000."></textarea></label>
-        <button class="btn primary" type="submit">Request Demo</button>
-      </form></div>
-    </div>
-  </section>
-
-  <footer class="footer"><div class="footer-panel"><div>PulseCore • Pluto 9000 smart milking control</div><div>Local assets folder included for test upload.</div></div></footer>
-</main>
-
-<script>
-const body=document.body,themeToggle=document.getElementById('themeToggle'),savedTheme=localStorage.getItem('pluto-theme');if(savedTheme==='light'||savedTheme==='dark')body.setAttribute('data-theme',savedTheme);themeToggle.addEventListener('click',()=>{const next=body.getAttribute('data-theme')==='light'?'dark':'light';body.setAttribute('data-theme',next);localStorage.setItem('pluto-theme',next);});
-const vacuumRange=document.getElementById('vacuumRange'),pulseRange=document.getElementById('pulseRange'),speedRange=document.getElementById('speedRange'),holdRange=document.getElementById('holdRange'),releaseRange=document.getElementById('releaseRange');
-const vacuumVal=document.getElementById('vacuumVal'),pulseVal=document.getElementById('pulseVal'),speedVal=document.getElementById('speedVal'),holdVal=document.getElementById('holdVal'),releaseVal=document.getElementById('releaseVal');
-const chamber=document.getElementById('chamberVisual'),centerUnit=document.getElementById('centerUnit'),centerWindow=document.getElementById('centerWindow'),centerBeam=document.getElementById('centerBeam'),centerCore=document.getElementById('centerCore'),centerBars=[...document.querySelectorAll('#centerBars span')],phaseLabel=document.getElementById('phaseLabel'),phaseStrip=[...document.querySelectorAll('#phaseStrip div')],graphLine=document.getElementById('graphLine'),graphFill=document.getElementById('graphFill'),graphAccent=document.getElementById('graphAccent'),playPauseBtn=document.getElementById('playPauseBtn'),resetBtn=document.getElementById('resetBtn');
-const phaseNames=['Pressure','Vacuum Pull','Hold','Pulse','Release'];let phaseIndex=0,playing=true,lastTick=performance.now();
-function labels(){vacuumVal.textContent=`${vacuumRange.value}%`;pulseVal.textContent=`${pulseRange.value}%`;speedVal.textContent=`${speedRange.value} PPM`;holdVal.textContent=`${holdRange.value}%`;releaseVal.textContent=`${releaseRange.value}%`;}
-function buildWave(){const vac=+vacuumRange.value/100,pulse=+pulseRange.value/100,hold=+holdRange.value/100,rel=+releaseRange.value/100,startY=124,pTop=124-(28+vac*30),vacTop=124-(44+vac*56),holdTop=124-(24+hold*36),pulseTop=124-(28+pulse*68),relTop=124-(12+rel*42),endY=124-(8+rel*16);const d=[`M 0 ${startY}`,`C 42 ${startY}, 54 ${pTop}, 92 ${pTop}`,`S 140 ${vacTop}, 188 ${vacTop}`,`S 238 ${holdTop}, 286 ${holdTop}`,`C 330 ${holdTop}, 336 ${pulseTop}, 376 ${pulseTop}`,`S 428 ${124-(16+pulse*28)}, 470 ${pulseTop}`,`S 520 ${relTop}, 570 ${relTop}`,`S 650 ${endY}, 760 ${endY}`].join(' ');const accent=`M 0 ${startY+14} C 70 ${startY+14}, 120 ${holdTop+16}, 190 ${holdTop+16} S 340 ${pulseTop+14}, 430 ${pulseTop+14} S 570 ${relTop+18}, 760 ${endY+12}`;graphLine.setAttribute('d',d);graphFill.setAttribute('d',`${d} L 760 180 L 0 180 Z`);graphAccent.setAttribute('d',accent);}
-function strength(i){const vac=+vacuumRange.value/100,pulse=+pulseRange.value/100,hold=+holdRange.value/100,rel=+releaseRange.value/100;return i===0?.32+vac*.28:i===1?.55+vac*.40:i===2?.26+hold*.34:i===3?.44+pulse*.46:.34+rel*.42;}
-function updateVisual(){const s=strength(phaseIndex);phaseLabel.textContent=phaseNames[phaseIndex];phaseStrip.forEach((el,i)=>el.classList.toggle('active',i===phaseIndex));const leftScale=phaseIndex===1?1+s*.12:phaseIndex===3?1+s*.07:1,rightScale=phaseIndex===4?1+s*.14:phaseIndex===3?1+s*.07:1;chamber.style.filter=`brightness(${.93+s*.17})`;chamber.style.background=phaseIndex===4?'linear-gradient(180deg, rgba(245,158,11,.08), #0d131a)':phaseIndex===3?'linear-gradient(180deg, rgba(236,72,153,.07), #0d131a)':'linear-gradient(180deg, rgba(24,168,255,.06), #0d131a)';chamber.style.setProperty('--left-transform',`scaleX(${leftScale}) translateX(${leftScale>1?'-4px':'0px'})`);chamber.style.setProperty('--right-transform',`scaleX(${rightScale}) translateX(${rightScale>1?'4px':'0px'})`);chamber.style.setProperty('--left-shadow',phaseIndex===1||phaseIndex===3?`0 0 24px rgba(126,231,255,${.12+s*.18})`:'none');chamber.style.setProperty('--right-shadow',phaseIndex===4||phaseIndex===3?`0 0 24px rgba(255,178,125,${.12+s*.18})`:'none');centerUnit.style.width=`${112+s*24}px`;centerUnit.style.filter=`brightness(${1+s*.18})`;centerUnit.style.boxShadow=phaseIndex===4?'inset 0 0 0 2px rgba(0,0,0,.45),inset 0 0 24px rgba(255,255,255,.04),0 0 28px rgba(245,158,11,.20)':phaseIndex===3?'inset 0 0 0 2px rgba(0,0,0,.45),inset 0 0 24px rgba(255,255,255,.04),0 0 30px rgba(255,113,188,.24)':'inset 0 0 0 2px rgba(0,0,0,.45),inset 0 0 24px rgba(255,255,255,.04),0 0 22px rgba(126,231,255,.16)';centerWindow.style.width=`${52+s*12}px`;centerBeam.style.height=`${38+s*50}%`;centerBeam.style.width=`${16+s*10}px`;centerBeam.style.opacity=`${.72+s*.24}`;centerBeam.style.filter=`brightness(${1+s*.24})`;const coreSize=18+s*16;centerCore.style.width=`${coreSize}px`;centerCore.style.height=`${coreSize}px`;centerBars.forEach((bar,idx)=>{let base=.48+(idx%3)*.10;if(phaseIndex===1)base+=.10;if(phaseIndex===3)base+=.18+(idx%2)*.08;if(phaseIndex===4)base+=.04;bar.style.transform=`scaleX(${Math.min(1.1,base+s*.30)})`;bar.style.opacity=`${.62+s*.30}`;});}
-function updateAll(){labels();buildWave();updateVisual();}
-function reset(){vacuumRange.value=68;pulseRange.value=58;speedRange.value=46;holdRange.value=35;releaseRange.value=72;phaseIndex=0;updateAll();}
-[vacuumRange,pulseRange,speedRange,holdRange,releaseRange].forEach(el=>el.addEventListener('input',updateAll));playPauseBtn.addEventListener('click',()=>{playing=!playing;playPauseBtn.textContent=playing?'Pause motion':'Resume motion';playPauseBtn.classList.toggle('primary',playing);});resetBtn.addEventListener('click',reset);
-function animate(now){const ppm=+speedRange.value,cycleMs=60000/Math.max(ppm,1)*1.45,phaseDuration=cycleMs/5;if(playing&&now-lastTick>=phaseDuration){phaseIndex=(phaseIndex+1)%5;lastTick=now;updateAll();}requestAnimationFrame(animate);}
-reset();requestAnimationFrame(animate);
-</script>
 </body>
 </html>
