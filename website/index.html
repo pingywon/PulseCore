@@ -112,12 +112,16 @@ h1 .l2{display:block;font-style:italic;font-weight:600;
 .mglow{position:relative;display:inline-grid;place-items:center;border-radius:50%;
   background:radial-gradient(circle at 50% 46%,rgba(25,168,255,.22),rgba(255,77,141,.10) 44%,var(--void) 70%)}
 .mglow.pink{background:radial-gradient(circle at 50% 46%,rgba(255,77,141,.24),rgba(25,168,255,.10) 44%,var(--void) 70%)}
-.mglow img{mix-blend-mode:screen;filter:drop-shadow(0 16px 26px rgba(0,0,0,.5))}
+.mglow img{mix-blend-mode:screen;filter:drop-shadow(0 16px 26px rgba(0,0,0,.5));
+  -webkit-mask:linear-gradient(to right,transparent,#000 7%,#000 93%,transparent),linear-gradient(to bottom,transparent,#000 6%,#000 94%,transparent);
+  -webkit-mask-composite:source-in;mask:linear-gradient(to right,transparent,#000 7%,#000 93%,transparent),linear-gradient(to bottom,transparent,#000 6%,#000 94%,transparent);mask-composite:intersect}
 .milky-hero{position:relative;z-index:3;max-height:520px;
   mix-blend-mode:screen;
   filter:drop-shadow(0 26px 40px rgba(0,0,0,.6)) drop-shadow(0 0 30px rgba(25,168,255,.25));
   animation:floaty 5.5s ease-in-out infinite;
-  transform:translateY(calc(var(--pulse)*-7px))}
+  transform:translateY(calc(var(--pulse)*-7px));
+  -webkit-mask:linear-gradient(to right,transparent,#000 8%,#000 92%,transparent),linear-gradient(to bottom,transparent,#000 5%,#000 95%,transparent);
+  -webkit-mask-composite:source-in;mask:linear-gradient(to right,transparent,#000 8%,#000 92%,transparent),linear-gradient(to bottom,transparent,#000 5%,#000 95%,transparent);mask-composite:intersect}
 @keyframes floaty{0%,100%{margin-top:0}50%{margin-top:-16px}}
 .badge{position:absolute;z-index:4;padding:10px 14px;border-radius:14px;backdrop-filter:blur(10px);
   background:rgba(10,13,20,.7);border:1px solid var(--line-2);font-size:.84rem;box-shadow:var(--shadow)}
@@ -246,7 +250,8 @@ input[type=range]::-moz-range-thumb{width:24px;height:24px;border-radius:50%;cur
 .duo{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:center;
   border-radius:var(--radius);border:1px solid rgba(255,77,141,.3);overflow:hidden;
   background:linear-gradient(120deg,rgba(255,77,141,.08),rgba(25,168,255,.06));box-shadow:var(--glow-pink)}
-.duo-art{position:relative;min-height:430px;display:flex;align-items:center;justify-content:center;gap:0;padding:24px}
+.duo-art{position:relative;min-height:430px;display:flex;align-items:center;justify-content:center;gap:0;padding:24px;
+  background:radial-gradient(60% 60% at 50% 46%,rgba(255,77,141,.14),var(--ink) 70%)}
 .duo-art .glow{position:absolute;width:78%;aspect-ratio:1;border-radius:50%;
   background:radial-gradient(circle,rgba(255,77,141,.3),transparent 65%);filter:blur(10px);transform:scale(calc(1 + var(--pulse)*.05))}
 .duo-art .duo-milky{display:block}
