@@ -1,6 +1,6 @@
 # arduino-cli build output
 firmware/pulsefeed/build/
-dist/firmware/
+dist/
 
 # host build artifacts
 dist/pf_test
