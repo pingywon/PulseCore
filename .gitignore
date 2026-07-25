@@ -1,0 +1,5 @@
+dist/firmware/
+dist/pf_test
+dist/pulsefeed-sim
+__pycache__/
+*.o

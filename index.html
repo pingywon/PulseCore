@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>PulseFeed 2.0 — build output</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#070b11;--pan:#131b26;--line:#22303f;--tx:#e9eff8;--mu:#8598ad;
+--ac:#35c6f4;--ac2:#4fe3a8;--wa:#ffb13d;--da:#ff4d5a}
+body{background:radial-gradient(1000px 520px at 50% -8%,#16202e,var(--bg));
+color:var(--tx);font:15.5px/1.6 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+min-height:100vh;padding:34px 20px 70px}
+a{color:var(--ac);text-decoration:none}a:hover{text-decoration:underline}
+.wrap{max-width:900px;margin:auto}
+.head{display:flex;align-items:center;gap:13px;margin-bottom:8px}
+.mark{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;
+background:conic-gradient(from 210deg,var(--ac),var(--ac2),var(--ac));
+color:#06121b;font-weight:900;font-size:16px}
+h1{font-size:27px;letter-spacing:-.02em}
+h1 small{display:block;font-size:13px;font-weight:500;color:var(--mu);letter-spacing:0}
+.mu{color:var(--mu)}
+h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mu);
+margin:32px 0 12px;padding-top:16px;border-top:1px solid var(--line)}
+.card{background:linear-gradient(180deg,var(--pan),#0d141d);border:1px solid var(--line);
+border-radius:14px;padding:18px;margin-bottom:12px}
+.dl{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.dl .g{flex:1;min-width:210px}
+.dl b{font-size:17px}
+.btn{display:inline-block;border-radius:11px;padding:12px 22px;font-weight:800;font-size:14.5px;
+background:linear-gradient(135deg,var(--ac2),#33c9e0);color:#04121a;white-space:nowrap}
+.btn:hover{filter:brightness(1.08);text-decoration:none}
+.btn.s{background:none;border:1px solid var(--line);color:var(--tx)}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.grid a.card{display:block;color:inherit}
+.grid a.card:hover{border-color:#31465e;text-decoration:none}
+.grid b{display:block;font-size:15.5px;margin-bottom:3px}
+.grid span{font-size:13.5px;color:var(--mu)}
+.paths{font:12.6px/2 ui-monospace,SFMono-Regular,Menlo,monospace}
+.paths div{display:grid;grid-template-columns:64px 1fr;gap:10px;align-items:baseline}
+.paths i{font-style:normal;color:var(--mu);font-size:10.5px;letter-spacing:.09em;text-transform:uppercase}
+.paths code{background:#0a121b;border:1px solid var(--line);border-radius:6px;
+padding:3px 8px;color:#bcd6ea;word-break:break-all}
+.sum{font:11.6px/1.7 ui-monospace,monospace;color:var(--mu);word-break:break-all;margin-top:10px}
+.live{display:inline-flex;align-items:center;gap:7px;font-size:11.5px;font-weight:700;
+color:var(--ac2);border:1px solid rgba(79,227,168,.3);background:rgba(79,227,168,.08);
+border-radius:999px;padding:4px 11px;margin-left:8px}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--ac2);animation:b 1.5s infinite}
+@keyframes b{0%,100%{opacity:1}50%{opacity:.25}}
+.warn{border-left:3px solid var(--wa);background:rgba(255,177,61,.06);
+border-radius:0 10px 10px 0;padding:12px 15px;font-size:14px;margin-top:14px;color:#d8c9a8}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:4px}
+td{padding:7px 0;border-bottom:1px solid var(--line)}
+td:last-child{text-align:right;color:var(--mu);font-variant-numeric:tabular-nums;white-space:nowrap}
+</style>
+</head>
+<body><div class="wrap">
+
+<div class="head">
+  <div class="mark">PF</div>
+  <h1>PulseFeed 2.0<small>Full audit and reconstruction of the Pluto 9000 controller</small></h1>
+</div>
+
+<h2>Download</h2>
+<div class="card">
+  <div class="dl">
+    <div class="g">
+      <b>pulsefeed-2.0.0.zip</b>
+      <div class="mu">1.0 MB &middot; firmware source + flashable .bin, simulator,
+        bridge, tests, web UI, site, docs</div>
+    </div>
+    <a class="btn" href="dist/pulsefeed-2.0.0.zip">Download</a>
+    <a class="btn s" href="dist/SHA256SUMS.txt">Checksums</a>
+  </div>
+  <div class="sum">sha256 &nbsp;6ae542a7f2c9d3b095c5a20c46525ddb9c9da373854c8955ffc9e1b316cc30a3</div>
+</div>
+
+<h2>Read this first</h2>
+<div class="grid">
+  <a class="card" href="README.md"><b>README.md</b>
+    <span>The audit, every finding, the reconstruction and the reasoning.</span></a>
+  <a class="card" href="CHANGELOG.md"><b>CHANGELOG.md</b>
+    <span>Everything fixed, added and deliberately left alone.</span></a>
+</div>
+
+<h2>Live right now on this machine</h2>
+<div class="grid">
+  <a class="card" href="http://192.168.13.131:8420/"><b>Device dashboard
+      <span class="live"><span class="dot"></span>LIVE</span></b>
+    <span>The real firmware engine running at 1&nbsp;kHz in the simulator, serving the
+      real web UI and REST API. PIN <b>246813</b>.</span></a>
+  <a class="card" href="http://192.168.13.131:8434/"><b>Through the bridge
+      <span class="live"><span class="dot"></span>LIVE</span></b>
+    <span>Same device behind the reverse proxy in <b>readonly</b> mode. Share key
+      <b>demo-readonly</b>. Try starting it &mdash; it will refuse.</span></a>
+  <a class="card" href="site/index.html"><b>Marketing site</b>
+    <span>The product page.</span></a>
+  <a class="card" href="site/docs.html"><b>Technical documentation</b>
+    <span>Architecture, REST API v1, configuration, safety notes.</span></a>
+</div>
+
+<h2>What's in the box</h2>
+<div class="card"><table>
+  <tr><td><b>firmware/pulsefeed/</b> &mdash; 19 files, rebuilt from one 2,887-line sketch</td><td>~5,100 lines</td></tr>
+  <tr><td><b>tests/</b> &mdash; host assertions on the engine the firmware ships</td><td>89 passing</td></tr>
+  <tr><td><b>sim/</b> &mdash; host simulator, links the same engine source</td><td>615 lines</td></tr>
+  <tr><td><b>bridge/</b> &mdash; safety-gated reverse proxy + tunnel/nginx/Caddy/systemd</td><td>619 lines</td></tr>
+  <tr><td><b>web/src/</b> &mdash; dashboard + report page, gzipped into flash</td><td>11.3 KB in flash</td></tr>
+  <tr><td><b>site/</b> &mdash; marketing page and documentation</td><td>2 pages</td></tr>
+  <tr><td><b>legacy/v43_original/</b> &mdash; your original sketch, untouched</td><td>for diffing</td></tr>
+  <tr><td>Firmware build</td><td>1.23 MB / 38% flash, 23% RAM</td></tr>
+</table></div>
+
+<h2>Get to these files</h2>
+<div class="card paths">
+  <div><i>http</i><code>http://192.168.13.131:8433/</code></div>
+  <div><i>unc</i><code>\\192.168.13.131\root\home\pingywon\pulsefeed</code></div>
+  <div><i>path</i><code>/home/pingywon/pulsefeed</code></div>
+</div>
+
+<div class="warn">
+  <b>Before you connect a load:</b> the output polarity in <code>pf_config.h</code>
+  reproduces v43's behaviour exactly and could not be verified against a physical board
+  here. Confirm it on a meter with the channels disconnected. This is prototype control
+  software, not a certified safety system.
+</div>
+
+<p class="mu" style="margin-top:26px;font-size:13px">
+  Firmware v2.0.0 &middot; API level 1 &middot; built and tested 2026-07-25
+</p>
+
+</div></body>
+</html>

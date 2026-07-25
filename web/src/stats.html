@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PulseFeed session report</title>
+<style>
+*{box-sizing:border-box}
+:root{--bg:#090d14;--pan:#141b26;--line:#2a3646;--tx:#e8eef7;--mu:#7d8fa6;
+--ac:#35c6f4;--ac2:#4fe3a8;--wa:#ffb13d;--da:#ff4d5a}
+body{margin:0;background:radial-gradient(1100px 500px at 50% -10%,#16202e,var(--bg));
+color:var(--tx);font:15px/1.45 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+.wrap{max-width:1080px;margin:auto;padding:16px}
+h1{font-size:24px;margin:0 0 4px}
+.sub{color:var(--mu);font-size:13px}
+.card{background:linear-gradient(180deg,var(--pan),#101722);border:1px solid #26364c;
+border-radius:14px;padding:14px;margin-top:12px}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.big{font-size:28px;font-weight:800;font-variant-numeric:tabular-nums}
+.lab{color:var(--mu);font-size:11px;letter-spacing:.09em;text-transform:uppercase}
+select,button,input{font:inherit;color:inherit;background:#0b111b;border:1px solid var(--line);
+border-radius:10px;padding:10px}
+button{background:var(--ac2);color:#06121b;border:0;font-weight:800;cursor:pointer}
+canvas{width:100%;height:230px;background:#0b111b;border:1px solid var(--line);border-radius:12px}
+table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:6px}
+th,td{padding:7px 6px;border-bottom:1px solid #22314a;text-align:left;white-space:nowrap}
+th{color:var(--mu);font-weight:700;position:sticky;top:0;background:#141b26}
+.scroll{max-height:340px;overflow:auto;border-radius:10px}
+.pill{display:inline-block;border:1px solid var(--line);border-radius:999px;
+padding:6px 11px;margin:3px 3px 0 0;font-size:12.5px;color:var(--mu)}
+.pill b{color:var(--tx)}
+@media(max-width:560px){.hm{display:none}}
+</style>
+</head>
+<body><div class="wrap">
+
+<h1>PulseFeed session report</h1>
+<p class="sub">Reads the daily CSV written to <code>/log/YYYY-MM-DD/</code> on the controller's
+SD card. Pick a log below, or drop a file in if you pulled the card.</p>
+
+<div class="card">
+  <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+    <select id="sel" style="flex:1 1 220px"></select>
+    <button onclick="loadSel()">LOAD</button>
+    <input type="file" id="pick" accept=".log,.csv" style="flex:1 1 200px">
+  </div>
+  <p class="sub" id="msg" style="margin-bottom:0"></p>
+</div>
+
+<div class="grid" style="margin-top:12px">
+  <div class="card"><div class="lab">Rows</div><div class="big" id="kRows">0</div></div>
+  <div class="card"><div class="lab">Run time</div><div class="big" id="kRun">0:00</div></div>
+  <div class="card"><div class="lab">Avg vacuum</div><div class="big" id="kVac">0%</div></div>
+  <div class="card"><div class="lab">Avg PPM</div><div class="big" id="kPpm">0</div></div>
+  <div class="card"><div class="lab">Avg motor</div><div class="big" id="kMot">0%</div></div>
+  <div class="card"><div class="lab">Peak vacuum</div><div class="big" id="kPeak">0%</div></div>
+</div>
+
+<div class="card">
+  <span class="pill">Starts <b id="pStart">0</b></span>
+  <span class="pill">Stops <b id="pStop">0</b></span>
+  <span class="pill">E-stops <b id="pEs">0</b></span>
+  <span class="pill">Setting changes <b id="pSet">0</b></span>
+  <span class="pill">Watchdog / limit stops <b id="pWd">0</b></span>
+</div>
+
+<div class="card">
+  <div class="lab">Vacuum, PPM and motor over the session</div>
+  <canvas id="ch"></canvas>
+  <p class="sub">Mint = vacuum actual &middot; cyan = PPM &middot; amber = motor</p>
+</div>
+
+<div class="card">
+  <div class="lab">Events</div>
+  <div class="scroll"><table><thead><tr>
+    <th>Time</th><th>Event</th><th>Vac</th><th>PPM</th><th>Ratio</th>
+    <th class="hm">Motor</th><th class="hm">Rhythm</th><th class="hm">Run</th>
+  </tr></thead><tbody id="rows"></tbody></table></div>
+</div>
+
+<script>
+'use strict';
+const $=i=>document.getElementById(i);
+let rows=[];
+const tok=new URLSearchParams(location.search).get('t')||localStorage.getItem('pf_tok')||'';
+
+function parse(t){
+  const lines=t.trim().split(/\r?\n/).filter(Boolean);
+  if(!lines.length)return[];
+  const head=lines.shift().split(',');
+  return lines.map(l=>{const p=l.split(','),o={};head.forEach((k,i)=>o[k.trim()]=p[i]);return o});
+}
+const num=v=>{const n=Number(v);return isFinite(n)?n:0};
+function hms(s){s=Math.max(0,Math.round(s));
+  return Math.floor(s/3600)+':'+String(Math.floor(s%3600/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
+
+function draw(){
+  const c=$('ch'),r=c.getBoundingClientRect(),d=devicePixelRatio||1;
+  c.width=r.width*d;c.height=r.height*d;
+  const x=c.getContext('2d');x.scale(d,d);x.clearRect(0,0,r.width,r.height);
+  x.strokeStyle='#22314a';x.lineWidth=1;
+  for(let i=1;i<4;i++){const y=r.height*i/4;x.beginPath();x.moveTo(0,y);x.lineTo(r.width,y);x.stroke()}
+  if(rows.length<2)return;
+  const line=(key,max,col)=>{
+    x.strokeStyle=col;x.lineWidth=2;x.beginPath();
+    rows.forEach((o,i)=>{
+      const px=i/(rows.length-1)*r.width;
+      const py=r.height-8-(Math.min(num(o[key]),max)/max)*(r.height-18);
+      i?x.lineTo(px,py):x.moveTo(px,py);
+    });
+    x.stroke();
+  };
+  line('vacActual',100,'#4fe3a8');
+  line('ppm',400,'#35c6f4');
+  line('motor',100,'#ffb13d');
+}
+
+function render(text){
+  rows=parse(text);
+  const ev=e=>(e||'').toLowerCase();
+  let vac=0,ppm=0,mot=0,peak=0,n=0,starts=0,stops=0,es=0,sets=0,wd=0,samples=0;
+  rows.forEach(o=>{
+    const e=ev(o.event);
+    if(e.startsWith('start'))starts++;
+    if(e.startsWith('stop'))stops++;
+    if(e.startsWith('estop'))es++;
+    if(e.startsWith('set-'))sets++;
+    if(e.includes('watchdog')||e.includes('limit'))wd++;
+    if(e.startsWith('sample'))samples++;
+    if(num(o.running)===1){
+      vac+=num(o.vacActual);ppm+=num(o.ppm);mot+=num(o.motor);
+      peak=Math.max(peak,num(o.vacActual));n++;
+    }
+  });
+  n=n||1;
+  $('kRows').textContent=rows.length;
+  $('kRun').textContent=hms(samples*2.5);
+  $('kVac').textContent=Math.round(vac/n)+'%';
+  $('kPpm').textContent=Math.round(ppm/n);
+  $('kMot').textContent=Math.round(mot/n)+'%';
+  $('kPeak').textContent=Math.round(peak)+'%';
+  $('pStart').textContent=starts;$('pStop').textContent=stops;$('pEs').textContent=es;
+  $('pSet').textContent=sets;$('pWd').textContent=wd;
+
+  const esc=s=>String(s==null?'':s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+  $('rows').innerHTML=rows.filter(o=>!ev(o.event).startsWith('sample'))
+    .slice(-250).reverse().map(o=>
+    `<tr><td>${esc(o.time)}</td><td>${esc(o.event)}</td><td>${esc(o.vacActual)}%</td>
+     <td>${esc(o.ppm)}</td><td>${esc(o.ratio)}</td><td class="hm">${esc(o.motor)}%</td>
+     <td class="hm">${esc(o.rhythmId)}</td><td class="hm">${num(o.running)?'yes':'no'}</td></tr>`).join('');
+  draw();
+  $('msg').textContent=rows.length+' rows loaded.';
+}
+
+async function init(){
+  try{
+    const j=await (await fetch('/api/v1/logs',{cache:'no-store',
+      headers:tok?{'X-PF-Token':tok}:{}})).json();
+    $('sel').innerHTML=(j.files||[]).map(f=>`<option>${f}</option>`).join('')
+      ||'<option value="">no logs on the card</option>';
+    if(j.files&&j.files.length)loadSel();
+  }catch(e){
+    $('sel').innerHTML='<option value="">open from the controller, or drop a file</option>';
+    $('msg').textContent='Not connected to a controller — use the file picker.';
+  }
+}
+async function loadSel(){
+  const f=$('sel').value;if(!f)return;
+  const t=await (await fetch('/api/v1/logs/get?file='+encodeURIComponent(f)+
+    (tok?'&t='+encodeURIComponent(tok):''),{cache:'no-store'})).text();
+  render(t);
+}
+$('pick').onchange=e=>{const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();r.onload=()=>render(r.result);r.readAsText(f)};
+addEventListener('resize',draw);
+init();
+</script>
+</div></body>
+</html>

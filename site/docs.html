@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="PulseFeed technical documentation: architecture, REST API v1, configuration, build and flash.">
+<meta name="color-scheme" content="dark">
+<title>PulseFeed — documentation</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#070b11;--pan:#131b26;--line:#22303f;--tx:#e9eff8;--mu:#8598ad;
+--ac:#35c6f4;--ac2:#4fe3a8;--wa:#ffb13d;--da:#ff4d5a}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--tx);
+font:15.5px/1.65 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:var(--ac);text-decoration:none}a:hover{text-decoration:underline}
+nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);
+background:rgba(7,11,17,.85);border-bottom:1px solid var(--line)}
+.nv{display:flex;align-items:center;gap:22px;padding:13px 22px;max-width:1180px;margin:auto}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;color:var(--tx)}
+.mark{width:29px;height:29px;border-radius:9px;display:grid;place-items:center;
+background:conic-gradient(from 210deg,var(--ac),var(--ac2),var(--ac));color:#06121b;font-size:13px;font-weight:900}
+.sp{flex:1}
+.shell{max-width:1180px;margin:auto;display:grid;grid-template-columns:238px 1fr;gap:44px;padding:34px 22px 90px}
+@media(max-width:900px){.shell{grid-template-columns:1fr;gap:20px}aside{position:static!important;max-height:none!important}}
+aside{position:sticky;top:74px;align-self:start;max-height:calc(100vh - 96px);overflow:auto}
+aside b{display:block;font-size:11px;letter-spacing:.11em;text-transform:uppercase;
+color:var(--mu);margin:18px 0 8px}
+aside a{display:block;color:var(--mu);font-size:14px;padding:4px 0}
+aside a:hover{color:var(--tx);text-decoration:none}
+h1{font-size:34px;letter-spacing:-.02em;margin-bottom:8px}
+h2{font-size:24px;letter-spacing:-.01em;margin:44px 0 12px;padding-top:14px;border-top:1px solid var(--line)}
+h3{font-size:17px;margin:26px 0 8px}
+p,li{color:#c4d2e2}
+.mu{color:var(--mu)}
+ul,ol{margin:10px 0 10px 22px}li{margin:5px 0}
+pre{background:#080d14;border:1px solid var(--line);border-radius:12px;padding:16px;
+overflow-x:auto;font:12.8px/1.65 ui-monospace,SFMono-Regular,Menlo,monospace;color:#cfe0f0;margin:12px 0}
+code{font:12.8px ui-monospace,SFMono-Regular,Menlo,monospace;
+background:#101823;border:1px solid var(--line);border-radius:5px;padding:1px 5px;color:#bcd6ea}
+pre code{background:none;border:0;padding:0}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+th,td{padding:10px 11px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{color:var(--mu);font-size:11px;letter-spacing:.09em;text-transform:uppercase}
+td:first-child{white-space:nowrap;font-family:ui-monospace,monospace;font-size:12.6px}
+.m{display:inline-block;font-size:10.5px;font-weight:800;border-radius:5px;
+padding:2px 6px;letter-spacing:.06em;margin-right:7px}
+.m.g{background:rgba(79,227,168,.16);color:var(--ac2)}
+.m.p{background:rgba(53,198,244,.16);color:var(--ac)}
+.note{border-left:3px solid var(--ac);background:rgba(53,198,244,.06);
+border-radius:0 10px 10px 0;padding:13px 16px;margin:16px 0;font-size:14.5px}
+.warn{border-left-color:var(--da);background:rgba(255,77,90,.06)}
+.warn b{color:var(--da)}
+</style>
+</head>
+<body>
+
+<nav><div class="nv">
+  <a class="logo" href="index.html"><span class="mark">PF</span> PulseFeed</a>
+  <span class="sp"></span>
+  <a href="index.html">Product</a>
+  <a href="index.html#get">Downloads</a>
+</div></nav>
+
+<div class="shell">
+<aside>
+  <b>Overview</b>
+  <a href="#arch">Architecture</a>
+  <a href="#channels">Channels &amp; limits</a>
+  <a href="#build">Build &amp; flash</a>
+  <b>Reference</b>
+  <a href="#api">REST API v1</a>
+  <a href="#auth">Authentication</a>
+  <a href="#config">Configuration</a>
+  <a href="#logs">Session logs</a>
+  <b>Operations</b>
+  <a href="#remote">Remote access</a>
+  <a href="#sim">Simulator</a>
+  <a href="#tests">Test suite</a>
+  <a href="#safety">Safety notes</a>
+</aside>
+
+<main>
+<h1>Documentation</h1>
+<p class="mu">PulseFeed firmware v2.0.0 &middot; API level 1 &middot; M5Stack CoreS3 (ESP32-S3)</p>
+
+<h2 id="arch">Architecture</h2>
+<p>The firmware is split so that the part which must keep time has no dependency on
+the parts that can block.</p>
+<pre><code>firmware/pulsefeed/
+  pf_core.h/.cpp     portable engine: settings, rhythm compiler, channel
+                     scheduler, JSON writer. No Arduino headers at all,
+                     which is what lets tests/ compile it on a host.
+  pf_rhythms.cpp     built-in pattern table
+  pf_config.h        pins, board wiring, build-time policy
+  pf_hal.h/.cpp      GPIO, LEDC PWM, monotonic clock
+  pf_app.h/.cpp      application state + the single command surface
+  pf_ui.h/.cpp       touchscreen: layout table, canvas rendering, touch
+  pf_net.h/.cpp      WiFi, setup AP, mDNS, captive portal, async scan
+  pf_api.h/.cpp      HTTP server, REST API, auth, rate limiting
+  pf_log.h/.cpp      lock-free queue -> batched SD writes
+  pf_store.h/.cpp    NVS with change-only writes
+  pf_web.h           GENERATED: gzipped web UI (tools/build_web.py)
+  pulsefeed.ino      setup(), loop(), the engine task</code></pre>
+
+<h3>Tasks</h3>
+<table>
+<tr><th>Task</th><th>Core</th><th>Priority</th><th>Does</th></tr>
+<tr><td>pf_engine</td><td>1</td><td>19</td><td>1 kHz tick; the only writer of the output pins</td></tr>
+<tr><td>loopTask</td><td>1</td><td>1</td><td>UI, touch, HTTP, DNS, SD flush, persistence</td></tr>
+<tr><td>wifi / lwIP</td><td>0</td><td>23</td><td>Arduino default</td></tr>
+</table>
+<p><code>loop()</code> calls <code>engine.feed()</code> every pass. If it stops doing so for
+2.5&nbsp;s the engine stops the machine on its own and records
+<code>STOP_WATCHDOG</code>. That is the deadman: a wedged UI or network stack cannot
+leave a channel energised.</p>
+
+<div class="note"><b>On settings races.</b> The engine task reads
+<code>Settings</code> while <code>loop()</code> may be writing it. That is deliberate and
+safe: every field is independently clamped before it is stored, so any interleaving of
+old and new fields is itself a valid configuration. Only the compiled rhythm patterns
+need real care, and <code>recompileCustom()</code> takes a pattern off the air before
+rebuilding it.</p></div>
+
+<h2 id="channels">Channels &amp; limits</h2>
+<table>
+<tr><th>Channel</th><th>Pin</th><th>Range</th><th>Drive</th></tr>
+<tr><td>CH1 vacuum</td><td>GPIO 5</td><td>0&ndash;100%</td><td>Duty window (default 1000&nbsp;ms) or LEDC PWM at 200&nbsp;Hz</td></tr>
+<tr><td>CH2 pulsation</td><td>GPIO 6</td><td>0, 30&ndash;400 PPM<br>ratio 30&ndash;70%</td><td>Discrete, always. A pulsator is bang-bang.</td></tr>
+<tr><td>CH3 motor</td><td>GPIO 7</td><td>0&ndash;100%, 5% steps</td><td>Discrete or LEDC PWM at 20&nbsp;kHz + soft start</td></tr>
+<tr><td>spare</td><td>GPIO 8</td><td>&mdash;</td><td>Held de-energised, never exposed</td></tr>
+</table>
+
+<h3>Rhythm ids</h3>
+<ul>
+  <li><code>0</code> &mdash; off; CH2 follows the PPM/ratio setting</li>
+  <li><code>1&ndash;24</code> &mdash; built-in patterns</li>
+  <li><code>32&ndash;39</code> &mdash; the eight recordable custom slots</li>
+</ul>
+<p>Notation: <code>.</code> is one unit on then one off, <code>-</code> is three on then one
+off, and a space adds one more unit of rest to the step before it. One unit is 250&nbsp;ms
+at 100% speed. Patterns are compiled to explicit milliseconds once, on change, never
+re-parsed while playing.</p>
+
+<h2 id="build">Build &amp; flash</h2>
+<pre><code>arduino-cli core install esp32:esp32
+arduino-cli lib install M5Unified M5GFX
+
+python3 tools/build_web.py                # regenerate pf_web.h after UI edits
+tools/build.sh firmware                   # compile
+tools/build.sh flash /dev/ttyACM0         # compile + upload</code></pre>
+<p class="mu">Reference build: 1,226,783 bytes flash (38%), 75,684 bytes static RAM (23%).</p>
+
+<h2 id="api">REST API v1</h2>
+<p>Every response is JSON. Every mutation is <code>POST</code> with an
+<code>application/x-www-form-urlencoded</code> body and an <code>X-PF-Token</code> header.</p>
+
+<table>
+<tr><th>Endpoint</th><th>Auth</th><th>Purpose</th></tr>
+<tr><td><span class="m g">GET</span>/api/v1/meta</td><td>open</td>
+    <td>Version, limits, the built-in rhythm table. Fetched once by the browser.</td></tr>
+<tr><td><span class="m g">GET</span>/api/v1/health</td><td>open</td>
+    <td>Liveness probe for a proxy. Reveals nothing about machine state.</td></tr>
+<tr><td><span class="m p">POST</span>/api/v1/auth</td><td>open</td>
+    <td><code>pin=</code> &rarr; <code>{token}</code>. Rate limited, locks out after 5 failures.</td></tr>
+<tr><td><span class="m g">GET</span>/api/v1/state</td><td>token</td>
+    <td>Full machine state. This is what the dashboard polls.</td></tr>
+<tr><td><span class="m p">POST</span>/api/v1/control</td><td>token</td>
+    <td><code>action=start|stop|estop|release|clear</code></td></tr>
+<tr><td><span class="m p">POST</span>/api/v1/settings</td><td>token</td>
+    <td><code>vac ppm ratio motor ramp motorSoftMs runLimitMin backlight dark</code> &mdash; any subset</td></tr>
+<tr><td><span class="m p">POST</span>/api/v1/rhythm</td><td>token</td>
+    <td><code>id=</code> and/or <code>speed=</code>, or <code>fav=1..3</code></td></tr>
+<tr><td><span class="m p">POST</span>/api/v1/custom</td><td>token</td>
+    <td><code>slot=1..8</code> + <code>action=arm|down|up|stop|save|clear|play|rename</code></td></tr>
+<tr><td><span class="m g">GET</span>/api/v1/wifi/scan</td><td>token</td>
+    <td>Starts an async scan and returns what is cached. Poll while <code>scanning</code> is true.</td></tr>
+<tr><td><span class="m p">POST</span>/api/v1/wifi/join</td><td>token</td><td><code>ssid=</code> <code>pass=</code></td></tr>
+<tr><td><span class="m g">GET</span>/api/v1/logs</td><td>token</td><td>List the CSV files on the card</td></tr>
+<tr><td><span class="m g">GET</span>/api/v1/logs/get</td><td>token or <code>?t=</code></td><td><code>file=YYYY-MM-DD.log</code></td></tr>
+<tr><td><span class="m p">POST</span>/api/v1/system</td><td>token</td><td><code>action=save|reboot|newpin</code></td></tr>
+</table>
+
+<h3>Example</h3>
+<pre><code>TOKEN=$(curl -s -X POST -d "pin=123456" \
+  http://pulsefeed.local/api/v1/auth | jq -r .token)
+
+curl -s -X POST -H "X-PF-Token: $TOKEN" \
+  -d "ppm=120&amp;ratio=60&amp;vac=70" \
+  http://pulsefeed.local/api/v1/settings
+
+curl -s -X POST -H "X-PF-Token: $TOKEN" \
+  -d "action=start" http://pulsefeed.local/api/v1/control
+
+curl -s -H "X-PF-Token: $TOKEN" \
+  http://pulsefeed.local/api/v1/state | jq</code></pre>
+
+<h2 id="auth">Authentication</h2>
+<ul>
+  <li>A six-digit PIN is generated on first boot and stored in NVS. It is shown on the
+      controller's <b>Network</b> screen and nowhere else.</li>
+  <li><code>POST /api/v1/auth</code> exchanges it for a bearer token, good for 12 hours.
+      Up to four concurrent sessions.</li>
+  <li>Five wrong PINs lock the endpoint for 60 seconds.</li>
+  <li>Mutations require the token in the <code>X-PF-Token</code> <em>header</em>. A
+      cross-origin form cannot set a custom header, so this is the CSRF defence as well.
+      Tokens are never accepted from a cookie.</li>
+  <li>File downloads accept <code>?t=</code> because the browser navigates to them
+      directly. That is the only exception, and it is GET-only.</li>
+</ul>
+<div class="note warn"><b>Turning auth off.</b> Settings has a switch for it. It exists
+for a bench with no network, and it is the wrong choice anywhere else. With auth off,
+anyone who can reach the port can start the machine.</div>
+
+<h2 id="config">Configuration</h2>
+<p>Board wiring and build policy live in <code>pf_config.h</code>.</p>
+<table>
+<tr><th>Constant</th><th>Default</th><th>Meaning</th></tr>
+<tr><td>PF_OFF_MODE</td><td>PF_OFF_HIGHZ</td><td>How a channel is de-energised. See the warning below.</td></tr>
+<tr><td>PF_ACTIVE_LEVEL</td><td>LOW</td><td>Channels are active low (ground-switched)</td></tr>
+<tr><td>PF_ENGINE_HZ</td><td>1000</td><td>Engine tick rate</td></tr>
+<tr><td>PF_ENGINE_PRIO</td><td>19</td><td>Above loopTask(1), below the WiFi stack(23)</td></tr>
+<tr><td>PF_LEDC_MOTOR_HZ</td><td>20000</td><td>Motor PWM, above audible</td></tr>
+<tr><td>PF_LOG_QUEUE_LEN</td><td>48</td><td>Log records buffered before drops start</td></tr>
+<tr><td>PF_AUTH_MAX_FAILS</td><td>5</td><td>PIN attempts before lockout</td></tr>
+</table>
+<div class="note warn"><b>Output polarity is unverified.</b> The default reproduces the
+previous firmware's electrical behaviour exactly, because guessing wrong here energises
+channels. Confirm against your driver board with the loads disconnected before changing
+<code>PF_OFF_MODE</code> or enabling PWM on a channel &mdash; PWM has no
+high-impedance state and must drive the pin.</div>
+
+<h2 id="logs">Session logs</h2>
+<p>With an SD card present, one CSV per day at
+<code>/log/YYYY-MM-DD/YYYY-MM-DD.log</code>:</p>
+<pre><code>ms,time,event,vacTarget,vacActual,ppm,ratio,motor,rhythmId,
+running,solVac,solPulse,solMotor,estop,heap</code></pre>
+<p>Events carry their origin: <code>start(screen)</code>, <code>set-ppm(web)</code>,
+<code>stop(auto)</code>. Records are queued and flushed once per second in a single
+open/close, so nothing on a control path ever waits on the card. If the queue fills, the
+drop is counted and reported in <code>state.sys.logDropped</code> rather than blocking.</p>
+<p>Open <code>/stats</code> on the device for the report view, or drop a file into that
+page from a card reader.</p>
+
+<h2 id="remote">Remote access</h2>
+<p>Use <code>bridge/pulsefeed-bridge.py</code>. It is a reverse proxy with its own auth,
+per-client rate limiting, an audit log and a mode ladder that caps what remote clients
+can do.</p>
+<pre><code>./pulsefeed-bridge.py --target http://192.168.13.50 \
+    --listen 127.0.0.1:8443 --mode readonly \
+    --device-pin 123456 \
+    --audit /var/log/pulsefeed/audit.jsonl</code></pre>
+<p><code>--device-pin</code> is exchanged for a token once at startup, so visitors never
+see the device PIN. Point Cloudflare Tunnel, nginx or Caddy at the bridge &mdash; never
+at the device. Configs are in <code>bridge/tunnel/</code>.</p>
+
+<h2 id="sim">Simulator</h2>
+<pre><code>tools/build.sh sim
+./dist/pulsefeed-sim --port 8080 --pin 246813</code></pre>
+<p>Links the same <code>pf_core.cpp</code> the firmware does, runs the engine at 1&nbsp;kHz
+in a thread, and serves the same dashboard and the same API. Useful for reviewing the UI,
+developing against the API, and testing the bridge without a device on the bench.</p>
+
+<h2 id="tests">Test suite</h2>
+<pre><code>tools/build.sh test</code></pre>
+<p>89 assertions against the exact engine the firmware ships, including:</p>
+<ul>
+  <li>pulse counts at 30, 60, 120, 240 and 400 PPM, within one pulse of exact</li>
+  <li>measured on-phase duty at 30/40/50/60/70% ratio, within 0.5%</li>
+  <li>pattern position stays exact across 24 simulated hours at 300% speed
+      (the 32-bit overflow the previous firmware had)</li>
+  <li>e-stop de-energises on the same tick and refuses a restart while latched</li>
+  <li>deadman and run-limit both stop the machine and record the reason</li>
+  <li>vacuum ramp within 5% across a 10&times; change in tick rate</li>
+  <li>a stopped engine energises nothing at any setting</li>
+  <li>JSON escaping of control characters and invalid UTF-8</li>
+</ul>
+
+<h2 id="safety">Safety notes</h2>
+<div class="note warn">
+<b>This is prototype control software.</b> It is not certified, not redundant, and not
+assessed by anyone. Software interlocks cannot protect against a shorted driver, a
+welded relay or a failed MOSFET. Anything that must fail safe needs a hardware interlock
+that does not pass through the microcontroller.
+</div>
+<p>What the firmware does guarantee:</p>
+<ul>
+  <li>Output pins are driven to their de-energised state before any other
+      initialisation, closing the power-on window.</li>
+  <li>E-stop calls the HAL directly &mdash; the pins are cut before the model is
+      updated and before anything is logged.</li>
+  <li>A stopped or latched engine returns all-off unconditionally, ahead of every
+      other computation in <code>tick()</code>.</li>
+  <li>The run limit defaults to 60 minutes. Setting it to 0 disables it, which is an
+      explicit choice rather than the default.</li>
+</ul>
+
+<p class="mu" style="margin-top:44px">&larr; <a href="index.html">Back to the product page</a></p>
+</main>
+</div>
+</body>
+</html>
