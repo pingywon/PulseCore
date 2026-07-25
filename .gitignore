@@ -1,5 +1,13 @@
+# arduino-cli build output
+firmware/pulsefeed/build/
 dist/firmware/
+
+# host build artifacts
 dist/pf_test
 dist/pulsefeed-sim
-__pycache__/
 *.o
+
+# local LAN landing page (machine-specific, generated for the download server)
+/index.html
+
+__pycache__/
