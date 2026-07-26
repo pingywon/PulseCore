@@ -11,3 +11,7 @@ dist/pulsefeed-sim
 /index.html
 
 __pycache__/
+
+# 40 MB of source renders — kept locally, rebuilt into site/assets via tools/build_assets.py
+assets-src/mascot/*.png
+assets-src/mascot/*.jpg

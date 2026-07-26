@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="620" viewBox="0 0 900 620">
+<style>
+.bg{fill:#0c1119}.card{fill:#131d2a;stroke:#243549;stroke-width:2}.soft{fill:#1b2737}.accent{fill:#19a8ff}.text{fill:#edf5ff;font-family:Arial,sans-serif}.muted{fill:#94aac0;font-family:Arial,sans-serif}.small{font-size:22px}.med{font-size:32px}.big{font-size:42px;font-weight:700}
+</style>
+<rect class="bg" width="900" height="620" rx="36"/>
+<rect class="card" x="28" y="28" width="844" height="564" rx="26"/>
+<text class="text big" x="60" y="92">Session tuning</text>
+<text class="muted med" x="60" y="130">Large controls for quick changes</text>
+<g>
+<rect class="soft" x="60" y="176" width="780" height="72" rx="20"/>
+<text class="text small" x="84" y="220">Primary Suction</text>
+<line x1="300" y1="212" x2="760" y2="212" stroke="#243549" stroke-width="12" stroke-linecap="round"/><line x1="300" y1="212" x2="620" y2="212" stroke="#19a8ff" stroke-width="12" stroke-linecap="round"/><circle cx="620" cy="212" r="18" fill="#19a8ff"/>
+<rect class="soft" x="60" y="268" width="780" height="72" rx="20"/>
+<text class="text small" x="84" y="312">Pulse Strength</text>
+<line x1="300" y1="304" x2="760" y2="304" stroke="#243549" stroke-width="12" stroke-linecap="round"/><line x1="300" y1="304" x2="566" y2="304" stroke="#19a8ff" stroke-width="12" stroke-linecap="round"/><circle cx="566" cy="304" r="18" fill="#19a8ff"/>
+<rect class="soft" x="60" y="360" width="780" height="72" rx="20"/>
+<text class="text small" x="84" y="404">Pulse Hold</text>
+<line x1="300" y1="396" x2="760" y2="396" stroke="#243549" stroke-width="12" stroke-linecap="round"/><line x1="300" y1="396" x2="480" y2="396" stroke="#19a8ff" stroke-width="12" stroke-linecap="round"/><circle cx="480" cy="396" r="18" fill="#19a8ff"/>
+<rect class="soft" x="60" y="452" width="780" height="72" rx="20"/>
+<text class="text small" x="84" y="496">Release</text>
+<line x1="300" y1="488" x2="760" y2="488" stroke="#243549" stroke-width="12" stroke-linecap="round"/><line x1="300" y1="488" x2="670" y2="488" stroke="#19a8ff" stroke-width="12" stroke-linecap="round"/><circle cx="670" cy="488" r="18" fill="#19a8ff"/>
+</g>
+</svg>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="620" viewBox="0 0 900 620">
+<style>
+.bg{fill:#0c1119}.card{fill:#131d2a;stroke:#243549;stroke-width:2}.soft{fill:#1b2737}.accent{fill:#19a8ff}.accent2{fill:#8adfff}.text{fill:#edf5ff;font-family:Arial,sans-serif}.muted{fill:#94aac0;font-family:Arial,sans-serif}
+.small{font-size:24px}.med{font-size:32px}.big{font-size:48px;font-weight:700}.label{font-size:22px;font-weight:700}
+</style>
+<rect class="bg" width="900" height="620" rx="36"/>
+<rect class="card" x="28" y="28" width="844" height="564" rx="26"/>
+<text class="text big" x="60" y="92">Pluto 9000</text>
+<text class="muted med" x="60" y="132">Main control screen</text>
+<rect class="soft" x="60" y="170" width="350" height="170" rx="22"/>
+<text class="muted small" x="84" y="210">VAC</text>
+<text class="text" style="font-size:96px;font-weight:800" x="82" y="298">68</text>
+<text class="accent2 med" x="222" y="298">%</text>
+<rect class="accent" x="84" y="314" width="290" height="10" rx="5"/>
+<rect class="soft" x="440" y="170" width="350" height="170" rx="22"/>
+<text class="muted small" x="464" y="210">PPM</text>
+<text class="text" style="font-size:96px;font-weight:800" x="462" y="298">46</text>
+<text class="accent2 med" x="602" y="298">PPM</text>
+<path d="M465 318 C505 284, 548 350, 590 318 S676 286, 760 320" fill="none" stroke="#19a8ff" stroke-width="8" stroke-linecap="round"/>
+<rect class="accent" x="60" y="382" width="360" height="160" rx="28"/>
+<text x="240" y="475" text-anchor="middle" style="fill:#081018;font-family:Arial,sans-serif;font-size:56px;font-weight:800">START</text>
+<rect class="soft" x="440" y="382" width="350" height="74" rx="24"/>
+<rect class="soft" x="440" y="468" width="350" height="74" rx="24"/>
+<text class="text label" x="470" y="427">Comfort cadence</text>
+<text class="muted small" x="470" y="510">Service + settings</text>
+</svg>
