@@ -1,5 +1,31 @@
 # Changelog
 
+## 2.1.0 -- service modes + Milky
+
+### Added
+- **Service / test modes** (`pf_service.*`), long-specified and never built:
+  manual per-channel firing including the spare/release pin, a pump sweep that
+  finds the squeal floor for real hardware, and a demo jukebox over all 24
+  rhythms. Reachable from the device (TEST on home) and `POST /api/v1/service`.
+- Raw channel access in the HAL (`hal::setChannelRaw`) so service mode can
+  reach the spare pin, which `Outputs` deliberately has no field for.
+- **Milky on the device.** Six RGB565 moods (83 KB of flash) tied to session
+  state along the brand's fatigue arc.
+- `tools/build_assets.py`: 40 MB of source renders -> 680 KB of WebP + the
+  device sprite header.
+
+### Changed
+- `MAX_BTNS` 20 -> 32. The service screen emits ~12 controls plus chrome and
+  nav; the old cap would have silently truncated the table and left a drawn
+  button unpressable.
+- Flash 38% -> 41% (the mascot). RAM unchanged at 23%.
+
+### Safety
+- Service mode refuses to start while a session is running, auto-releases every
+  channel after 8 s, times out after 3 min idle, and is dropped by E-STOP.
+- The engine still ticks during service mode so the deadman and run limit stay
+  live; service only takes the pins.
+
 ## 2.0.0 — full audit and reconstruction
 
 ### Fixed (defects found in v43)

@@ -14,6 +14,10 @@ bool    g_motorPwm   = false;
 bool    g_vacPwm     = false;
 Outputs g_last       = { false, false, false, 0, 0 };
 
+// Mirrors the last raw write per physical channel, so the Service
+// screen can show ON/off without reading the pin back.
+bool    g_raw[CH_COUNT] = { false, false, false, false };
+
 const int kInactiveLevel = (PF_ACTIVE_LEVEL == LOW) ? HIGH : LOW;
 
 // Put one channel into its de-energised state, honouring PF_OFF_MODE.
@@ -103,6 +107,7 @@ void applyOutputs(const Outputs& o) {
 }
 
 void allOff() {
+  for (int i = 0; i < CH_COUNT; i++) g_raw[i] = false;
   if (g_motorPwm) ledcWrite(PF_PIN_MOTOR, ledcDutyFor(0));
   if (g_vacPwm)   ledcWrite(PF_PIN_VAC, ledcDutyFor(0));
   if (!g_motorPwm) pinOff(PF_PIN_MOTOR);
@@ -113,6 +118,50 @@ void allOff() {
 }
 
 Outputs lastApplied() { return g_last; }
+
+// ------------------------------------------------------------------ //
+//  Raw channel access (Service mode)
+// ------------------------------------------------------------------ //
+namespace {
+int  rawPin(int ch) {
+  switch (ch) {
+    case CH_VAC:   return PF_PIN_VAC;
+    case CH_PULSE: return PF_PIN_PULSE;
+    case CH_MOTOR: return PF_PIN_MOTOR;
+    default:       return PF_PIN_SPARE;
+  }
+}
+}  // namespace
+
+const char* rawName(int ch) {
+  switch (ch) {
+    case CH_VAC:   return "CH1 VACUUM";
+    case CH_PULSE: return "CH2 PULSE";
+    case CH_MOTOR: return "CH3 MOTOR";
+    default:       return "CH4 SPARE";
+  }
+}
+
+void setChannelRaw(int ch, bool on) {
+  if (ch < 0 || ch >= CH_COUNT) return;
+  int pin = rawPin(ch);
+  // A PWM-attached pin cannot be driven with digitalWrite, so route the
+  // motor through LEDC when that is how it is configured.
+  if (ch == CH_MOTOR && g_motorPwm) { ledcWrite(pin, ledcDutyFor(on ? 255 : 0)); }
+  else if (ch == CH_VAC && g_vacPwm) { ledcWrite(pin, ledcDutyFor(on ? 255 : 0)); }
+  else if (on) pinOn(pin);
+  else pinOff(pin);
+  g_raw[ch] = on;
+}
+
+void setMotorRaw(uint8_t duty) {
+  if (g_motorPwm) ledcWrite(PF_PIN_MOTOR, ledcDutyFor(duty));
+  else if (duty >= 128) pinOn(PF_PIN_MOTOR);
+  else pinOff(PF_PIN_MOTOR);
+  g_raw[CH_MOTOR] = duty > 0;
+}
+
+bool rawState(int ch) { return (ch >= 0 && ch < CH_COUNT) ? g_raw[ch] : false; }
 bool ready() { return g_ready; }
 
 }  // namespace hal

@@ -42,6 +42,19 @@ void allOff();
 // Reflects what was last written, for telemetry.
 Outputs lastApplied();
 
+// ---- raw channel access, for Service mode only ---------------------
+// The engine speaks in Outputs, which deliberately has no field for the
+// spare channel. Service mode needs to reach every physical pin --
+// including the one v43 left permanently off, which is the release
+// valve in the original four-solenoid design -- so it gets a separate,
+// explicitly-named door rather than a new field on Outputs that the
+// engine would then have to ignore.
+enum RawCh { CH_VAC = 0, CH_PULSE, CH_MOTOR, CH_SPARE, CH_COUNT };
+const char* rawName(int ch);
+void setChannelRaw(int ch, bool on);
+void setMotorRaw(uint8_t duty);      // honours the LEDC setting if enabled
+bool rawState(int ch);
+
 // True once configureOutputs() has run.
 bool ready();
 

@@ -42,6 +42,7 @@
 #include "pf_api.h"
 #include "pf_log.h"
 #include "pf_store.h"
+#include "pf_service.h"
 
 using namespace pf;
 
@@ -57,8 +58,17 @@ static void engineTask(void*) {
   const TickType_t period = pdMS_TO_TICKS(1000 / PF_ENGINE_HZ);
 
   for (;;) {
-    Outputs o = app.engine.tick(hal::nowUs());
-    hal::applyOutputs(o);
+    uint64_t now = hal::nowUs();
+
+    // The engine always ticks, even in service mode: it keeps the
+    // deadman fed, the run limit honest and the model coherent, and it
+    // returns all-off while stopped. Service mode then takes the pins
+    // for itself if it is active.
+    Outputs o = app.engine.tick(now);
+    if (!service::tick(now)) {
+      hal::applyOutputs(o);
+    }
+
     esp_task_wdt_reset();
     vTaskDelayUntil(&last, period);
   }

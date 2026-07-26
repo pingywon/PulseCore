@@ -3,6 +3,8 @@
 // =====================================================================
 #include "pf_ui.h"
 #include "pf_hal.h"
+#include "pf_service.h"
+#include "pf_milky.h"
 
 #include <M5Unified.h>
 #include <math.h>
@@ -44,6 +46,10 @@ enum BtnId {
   B_THEME, B_BL_DN, B_BL_UP, B_AUTH, B_LIMIT_DN, B_LIMIT_UP,
   // network
   B_NET_AP, B_NET_WEB,
+  // service / test
+  B_SERVICE, B_SVC_EXIT, B_SVC_MANUAL, B_SVC_SWEEP, B_SVC_DEMO,
+  B_SVC_CH0, B_SVC_CH1, B_SVC_CH2, B_SVC_CH3,
+  B_SVC_GO, B_SVC_MARK, B_SVC_NEXT,
   // e-stop screens
   B_ES_RELEASE, B_ES_CANCEL, B_ES_RETURN,
 };
@@ -174,7 +180,7 @@ static uint32_t g_lastHist = 0;
 // The button table for the frame we most recently drew. Hit-testing
 // reads exactly this, so a control can never be drawn somewhere it
 // cannot be pressed.
-static const int MAX_BTNS = 20;
+static const int MAX_BTNS = 32;
 static Btn  g_btns[MAX_BTNS];
 static int  g_btnCount = 0;
 
@@ -227,6 +233,43 @@ static void bar(int x, int y, int w, int h, float frac, uint16_t col) {
   gfx()->fillRoundRect(x, y, w, h, h / 2, P.panel2);
   int fw = (int)(w * clampf(frac, 0.0f, 1.0f));
   if (fw > 2) gfx()->fillRoundRect(x, y, fw, h, h / 2, col);
+}
+
+// ------------------------------------------------------------------ //
+//  Milky
+//
+//  Sprites are RGB565 with a separate 1bpp mask -- the character has
+//  white in it, so a colour key was not an option. `div` draws at 1/div
+//  scale by nearest neighbour, which is enough for a mascot and avoids
+//  keeping several sizes in flash.
+// ------------------------------------------------------------------ //
+static void drawMilky(int x, int y, const MilkySprite* sp, int div = 1) {
+  if (!sp || div < 1) return;
+  const int stride = (sp->w + 7) / 8;
+  for (int row = 0; row < sp->h; row += div) {
+    for (int col = 0; col < sp->w; col += div) {
+      uint8_t m = pgm_read_byte(&sp->mask[row * stride + (col >> 3)]);
+      if (!(m & (0x80 >> (col & 7)))) continue;
+      uint16_t px = pgm_read_word(&sp->pixels[row * sp->w + col]);
+      gfx()->drawPixel(x + col / div, y + row / div, px);
+    }
+  }
+}
+
+// Milky's mood follows the session. The brand gives him a deliberate
+// fatigue arc -- fresh, then working, then spent -- so the device uses
+// run time to pick where along it he is. It doubles as an at-a-glance
+// read on how long this session has been going.
+static const MilkySprite* milkyMood() {
+  if (app.engine.estop())   return MILKY_MOODS[MILKY_MOOD_ESTOP];
+  if (service::active())    return MILKY_MOODS[MILKY_MOOD_WORKING];
+  if (app.engine.running()) {
+    uint32_t sec = app.engine.runSeconds(hal::nowUs());
+    if (sec > 2400) return MILKY_MOODS[MILKY_MOOD_SPENT];
+    if (sec > 1200) return MILKY_MOODS[MILKY_MOOD_TIRED];
+    return MILKY_MOODS[MILKY_MOOD_RUNNING];
+  }
+  return MILKY_MOODS[MILKY_MOOD_IDLE];
 }
 
 // ------------------------------------------------------------------ //
@@ -337,8 +380,12 @@ static void screenHome() {
   // Primary action + the three secondary destinations.
   emit(Btn{ B_RUN, 8, (int16_t)(BODY_Y + 96), 150, 56, run ? "STOP" : "START", (uint8_t)(run ? 3 : 2) });
   emit(Btn{ B_GRAPH,    166, (int16_t)(BODY_Y + 96), 146, 26, "GRAPHS",  0 });
-  emit(Btn{ B_NET,      166, (int16_t)(BODY_Y + 126), 70, 26, "NET",     0 });
-  emit(Btn{ B_SETTINGS, 242, (int16_t)(BODY_Y + 126), 70, 26, "SET",     0 });
+  emit(Btn{ B_NET,      166, (int16_t)(BODY_Y + 126), 46, 26, "NET",     0 });
+  emit(Btn{ B_SETTINGS, 216, (int16_t)(BODY_Y + 126), 46, 26, "SET",     0 });
+  emit(Btn{ B_SERVICE,  266, (int16_t)(BODY_Y + 126), 46, 26, "TEST",    1 });
+
+  // Milky, small, in the gap beside the run button.
+  drawMilky(120, BODY_Y + 94, milkyMood(), 2);
 
   navBar();
 }
@@ -579,6 +626,66 @@ static void screenRecord() {
   navBar();
 }
 
+static void screenService() {
+  topBar("Service / Test", true);
+  char b[64];
+
+  // Mode picker
+  service::Mode m = service::mode();
+  emit(Btn{ B_SVC_MANUAL, 8,   (int16_t)(BODY_Y + 4), 98, 30, "MANUAL",
+            (uint8_t)(m == service::SVC_MANUAL ? 1 : 0) });
+  emit(Btn{ B_SVC_SWEEP,  111, (int16_t)(BODY_Y + 4), 98, 30, "PUMP",
+            (uint8_t)(m == service::SVC_SWEEP ? 1 : 0) });
+  emit(Btn{ B_SVC_DEMO,   214, (int16_t)(BODY_Y + 4), 98, 30, "DEMO",
+            (uint8_t)(m == service::SVC_DEMO ? 1 : 0) });
+
+  if (m == service::SVC_MANUAL) {
+    // One button per physical channel, including the spare -- this is
+    // the tool for confirming polarity before a load is connected.
+    for (int i = 0; i < hal::CH_COUNT; i++) {
+      bool on = hal::rawState(i);
+      int y = BODY_Y + 40 + (i / 2) * 34;
+      int x = 8 + (i % 2) * 154;
+      char lbl[16];
+      snprintf(lbl, sizeof(lbl), "CH%d %s", i + 1, on ? "ON" : "off");
+      emit(Btn{ (uint8_t)(B_SVC_CH0 + i), (int16_t)x, (int16_t)y, 150, 30,
+                lbl, (uint8_t)(on ? 4 : 0) });
+    }
+    label("Hold to fire. Auto-releases after 8 s.",
+          W / 2, BODY_Y + 118, P.muted, &fonts::Font0);
+  } else if (m == service::SVC_SWEEP) {
+    int pct = service::sweepPercent();
+    card(8, BODY_Y + 40, W - 16, 46, P.panel);
+    label("PUMP DUTY", 18, BODY_Y + 54, P.muted, &fonts::Font0, textdatum_t::middle_left);
+    snprintf(b, sizeof(b), "%d%%", pct);
+    label(b, 18, BODY_Y + 72, P.warn, &fonts::Font4, textdatum_t::middle_left);
+    bar(96, BODY_Y + 66, W - 112, 10, pct / 100.0f, P.warn);
+    if (service::sweepMarked() >= 0) {
+      snprintf(b, sizeof(b), "marked %d%%", service::sweepMarked());
+      label(b, W - 20, BODY_Y + 52, P.good, &fonts::Font0, textdatum_t::middle_right);
+    }
+    emit(Btn{ B_SVC_GO,   8,   (int16_t)(BODY_Y + 92), 150, 32, "START SWEEP", 2 });
+    emit(Btn{ B_SVC_MARK, 162, (int16_t)(BODY_Y + 92), 150, 32, "MARK CLEAN",  1 });
+  } else if (m == service::SVC_DEMO) {
+    int id = service::demoRhythm();
+    card(8, BODY_Y + 40, 196, 84, P.panel);
+    snprintf(b, sizeof(b), "%d / %d", id, kBuiltinCount);
+    label(b, 18, BODY_Y + 54, P.muted, &fonts::Font0, textdatum_t::middle_left);
+    label(builtinName(id), 18, BODY_Y + 74, P.text, &fonts::Font2, textdatum_t::middle_left);
+    label(builtinDots(id), 18, BODY_Y + 96, P.warn, &fonts::Font0, textdatum_t::middle_left);
+    bool lit = hal::rawState(hal::CH_PULSE);
+    gfx()->fillCircle(180, BODY_Y + 74, lit ? 10 : 5, lit ? P.accent : P.grid);
+    drawMilky(214, BODY_Y + 34, milkyMood(), 1);
+    emit(Btn{ B_SVC_NEXT, 8, (int16_t)(BODY_Y + 128), 196, 26, "NEXT PATTERN", 0 });
+  } else {
+    label("Pick a test mode.", W / 2, BODY_Y + 80, P.muted, &fonts::Font2);
+  }
+
+  label(service::statusLine(), W / 2, NAV_Y - 10, P.muted, &fonts::Font0);
+  emit(Btn{ B_SVC_EXIT, (int16_t)(W - 104), (int16_t)(NAV_Y - 34), 96, 26, "EXIT", 3 });
+  navBar();
+}
+
 static void screenEstopConfirm() {
   gfx()->fillScreen(P.danger);
   label("OUTPUTS OFF", W / 2, 44, rgb(255, 255, 255), &fonts::Font4);
@@ -613,6 +720,7 @@ static void paint() {
     case SCR_NET:           screenNet(); break;
     case SCR_SETTINGS:      screenSettings(); break;
     case SCR_RECORD:        screenRecord(); break;
+    case SCR_SERVICE:       screenService(); break;
     case SCR_ESTOP_CONFIRM: screenEstopConfirm(); break;
     case SCR_ESTOP_ACTIVE:  screenEstopActive(); break;
     default:                screenHome(); break;
@@ -702,7 +810,7 @@ static void onPress(uint8_t id) {
       setScreen(SCR_ESTOP_CONFIRM);
       return;
     case B_BACK:       setScreen(g_screen == SCR_RECORD ? SCR_RHYTHM : SCR_HOME); return;
-    case B_NAV_HOME:   setScreen(SCR_HOME); return;
+    case B_NAV_HOME:   if (service::active()) service::exit(); setScreen(SCR_HOME); return;
     case B_NAV_VAC:    setScreen(SCR_VAC); return;
     case B_NAV_PULSE:  setScreen(SCR_PULSE); return;
     case B_NAV_MOTOR:  setScreen(SCR_MOTOR); return;
@@ -714,6 +822,18 @@ static void onPress(uint8_t id) {
       else                      cmdStart("screen");
       g_dirty = true; return;
     case B_GRAPH:    setScreen(SCR_GRAPH); return;
+    case B_SERVICE:
+      if (!service::enter(service::SVC_MANUAL)) { g_dirty = true; return; }
+      setScreen(SCR_SERVICE); return;
+
+    // --- service ---------------------------------------------------
+    case B_SVC_MANUAL: service::enter(service::SVC_MANUAL); g_dirty = true; return;
+    case B_SVC_SWEEP:  service::enter(service::SVC_SWEEP);  g_dirty = true; return;
+    case B_SVC_DEMO:   service::enter(service::SVC_DEMO);   g_dirty = true; return;
+    case B_SVC_GO:     service::sweepStart(); g_dirty = true; return;
+    case B_SVC_MARK:   service::sweepMark();  g_dirty = true; return;
+    case B_SVC_NEXT:   service::demoNext();   g_dirty = true; return;
+    case B_SVC_EXIT:   service::exit(); setScreen(SCR_HOME); return;
     case B_NET:      setScreen(SCR_NET); return;
     case B_SETTINGS: setScreen(SCR_SETTINGS); return;
 
@@ -787,6 +907,13 @@ static void onPress(uint8_t id) {
     default: break;
   }
 
+  if (id >= B_SVC_CH0 && id <= B_SVC_CH3) {
+    service::hold(id - B_SVC_CH0, true);
+    g_hold = id;
+    g_dirty = true;
+    return;
+  }
+
   if (isHoldable(id)) {
     g_hold = id;
     g_holdStart = millis();
@@ -818,6 +945,14 @@ void handleTouch() {
   }
 
   if (t.wasReleased()) {
+    // A service channel is momentary: letting go de-energises it now
+    // rather than waiting for the 8 s backstop.
+    if (g_hold >= B_SVC_CH0 && g_hold <= B_SVC_CH3) {
+      service::hold(g_hold - B_SVC_CH0, false);
+      g_hold = B_NONE;
+      g_dirty = true;
+      return;
+    }
     if (g_hold != B_NONE) {
       g_hold = B_NONE;
       saveSettingsNow("screen");
@@ -856,6 +991,7 @@ void tick() {
     case SCR_VAC:   case SCR_MOTOR: interval = 160; break;
     case SCR_GRAPH: interval = 250; break;
     case SCR_RECORD: interval = 200; break;
+    case SCR_SERVICE: interval = 140; break;
     default: interval = 800; break;
   }
 

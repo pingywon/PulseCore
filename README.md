@@ -368,6 +368,51 @@ device** — otherwise you've bypassed all of the above.
 
 ## Part 3 — Using it
 
+### Service / test modes
+
+The old dev's notes asked for these twice -- *"test firing"* in the hardware
+teardown and *"Service/check screens: firing individual valves, verifying pump
+behavior, and checking release function"* in the website brief -- and they had
+never been built. They are on the device under **TEST** on the home screen, and
+on the API.
+
+**MANUAL** fires any channel by hand, including the spare pin v43 left dead
+(the release valve in the four-solenoid design). This is how you confirm
+polarity per channel *with the loads disconnected* -- which is the open item
+everything else has been waiting on.
+
+**PUMP** ramps the motor 0 to 100% over 12 s while you listen, and you tap MARK
+where it stops squealing. The reference pump is useless below ~75%; this finds
+that number for your hardware instead of guessing it. It reports a suggested
+floor rather than writing it, because v2.0 has no `pumpFloor` field yet -- that
+arrives with the v3 cadence core.
+
+**DEMO** walks all 24 built-in rhythms on CH2 only, with Milky reacting. No
+vacuum, no motor, nothing to set up.
+
+Direct pin control is fenced: it refuses to start while a session is running,
+every channel auto-releases after 8 s, the whole mode times out after 3 min,
+and E-STOP drops it like anything else.
+
+```bash
+T=$(curl -s -X POST -d "pin=123456" http://pulsefeed.local/api/v1/auth | jq -r .token)
+S(){ curl -s -X POST -H "X-PF-Token: $T" -d "$1" http://pulsefeed.local/api/v1/service; }
+
+S "action=manual"
+S "action=pulse&ch=3&ms=300"     # fire the spare/release valve for 300 ms
+S "action=sweep"; S "action=sweepStart"
+S "action=demo";  S "action=demoNext"
+S "action=exit"
+```
+
+### Milky
+
+The mascot art from the plusecore repo is in the build. `tools/build_assets.py`
+turns 40 MB of source renders into 680 KB of WebP for the web and six RGB565
+moods in 83 KB of flash. On the device Milky's mood follows the session along
+the brand's fatigue arc -- fresh, running, working, tired past 20 minutes,
+spent past 40, and a shrug on E-STOP.
+
 ### Run the tests
 
 ```bash

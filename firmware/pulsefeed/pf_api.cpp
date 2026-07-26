@@ -6,6 +6,7 @@
 #include "pf_ui.h"
 #include "pf_hal.h"
 #include "pf_web.h"
+#include "pf_service.h"
 
 #include <WebServer.h>
 #include <WiFi.h>
@@ -267,6 +268,24 @@ void hState() {
   j.kvStr("version", kVersion);
   j.endObj();
 
+  j.key("service"); j.beginObj();
+  j.kvBool("active", service::active());
+  j.kvStr("mode", service::modeName());
+  j.kvStr("status", service::statusLine());
+  j.kvNum("sweepPct", service::sweepPercent());
+  j.kvNum("sweepMark", service::sweepMarked());
+  j.kvNum("demoId", service::demoRhythm());
+  j.key("channels"); j.beginArr();
+  for (int i = 0; i < hal::CH_COUNT; i++) {
+    j.beginObj();
+    j.kvNum("ch", i);
+    j.kvStr("name", hal::rawName(i));
+    j.kvBool("on", hal::rawState(i));
+    j.endObj();
+  }
+  j.endArr();
+  j.endObj();
+
   j.kvStr("status", app.statusMsg);
   j.endObj();
 
@@ -458,6 +477,50 @@ void hSystem() {
   sendErr(400, "unknown_action");
 }
 
+// Service / test modes. Every one of these drives a pin directly, so
+// they are POST + token like any other mutation, and the firmware's own
+// interlocks (no session running, per-channel auto-release, idle
+// timeout, E-STOP) still apply -- this endpoint cannot talk past them.
+void hService() {
+  g_reqs++;
+  if (!requirePost() || !requireAuth()) return;
+
+  String a = g_srv->arg("action");
+
+  if (a == "exit" || a == "off") { service::exit(); sendOk("service_off"); return; }
+
+  if (a == "manual" || a == "sweep" || a == "demo") {
+    service::Mode m = (a == "manual") ? service::SVC_MANUAL
+                    : (a == "sweep")  ? service::SVC_SWEEP : service::SVC_DEMO;
+    if (!service::enter(m)) { sendErr(409, service::statusLine()); return; }
+    sendOk(service::modeName());
+    return;
+  }
+
+  if (!service::active()) { sendErr(409, "service_not_active"); return; }
+
+  if (a == "hold" || a == "release") {
+    int ch = argInt("ch", -1);
+    if (ch < 0 || ch >= hal::CH_COUNT) { sendErr(400, "bad_channel"); return; }
+    service::hold(ch, a == "hold");
+    sendOk(hal::rawName(ch));
+    return;
+  }
+  if (a == "pulse") {
+    int ch = argInt("ch", -1);
+    if (ch < 0 || ch >= hal::CH_COUNT) { sendErr(400, "bad_channel"); return; }
+    service::pulse(ch, (uint32_t)argInt("ms", 200));
+    sendOk(hal::rawName(ch));
+    return;
+  }
+  if (a == "alloff")     { service::allChannelsOff(); sendOk("channels_off"); return; }
+  if (a == "sweepStart") { service::sweepStart(); sendOk("sweeping"); return; }
+  if (a == "sweepMark")  { service::sweepMark();  sendOk(service::statusLine()); return; }
+  if (a == "demoNext")   { service::demoNext();   sendOk(service::statusLine()); return; }
+
+  sendErr(400, "unknown_action");
+}
+
 void hStats() { g_reqs++; gzAsset("text/html", PF_STATS_GZ, PF_STATS_GZ_LEN); }
 
 // Captive-portal probes. Answering these correctly is what makes a
@@ -516,6 +579,7 @@ void begin(uint16_t port) {
   g_srv->on("/api/v1/logs",        HTTP_GET,  hLogs);
   g_srv->on("/api/v1/logs/get",    HTTP_GET,  hLogGet);
   g_srv->on("/api/v1/system",      HTTP_POST, hSystem);
+  g_srv->on("/api/v1/service",     HTTP_POST, hService);
 
   g_srv->onNotFound(hNotFound);
   g_srv->begin();
