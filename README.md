@@ -48,4 +48,11 @@ and emits the web-sized WebP set plus the device sprite header.
 
 ## Hardware note
 
-The current firmware follows the current sketch pin truth. Older hardware notes may mention other pin mappings and should not override the latest firmware folder without deliberate review.
+The pin truth above is what `pulsefeed/firmware/pulsefeed/pf_config.h` actually
+compiles. Older hardware notes may mention other pin mappings and should not
+override the active firmware without deliberate review.
+
+Output polarity has **not** been verified on real hardware. `PF_OFF_MODE`
+deliberately reproduces v43's behaviour because guessing wrong energises
+channels. Confirm on a meter with loads disconnected before enabling PWM on a
+channel.

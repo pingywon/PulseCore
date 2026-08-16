@@ -32,4 +32,10 @@ v43-web-custom-rhythms-sdlog-compilecheck
 
 ## Notes
 
-Use this folder as the latest source of truth unless a newer numbered software folder is added.
+This is the most current v43 and the last of the original numbered line — the
+authoritative copy of it in this repo. It is no longer the active firmware:
+`pulsefeed/` (PulseFeed 2.x) supersedes it and is what gets built and flashed.
+Keep this folder as the v43 baseline to diff the reconstruction against.
+
+Note that v43 does not link as shipped — `changeRhythmSpeed(int)` is declared
+and called but never defined.
