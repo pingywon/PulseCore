@@ -31,5 +31,9 @@ Make sure this is a new version and reduce compile risk in Arduino IDE by adding
   - handleLogList()
   - handleLogData()
 
+## GitHub cleanup
+- Full `.ino` source should be tracked in this firmware folder, not only metadata.
+- Top-level README points to this v43 folder as the current latest firmware.
+
 ## Notes
 A true Arduino/M5Stack compile cannot be run in this environment because the M5Stack ESP32 toolchain is not installed here. I did run local static syntax checks with a stubbed Arduino/M5Stack environment and checked brace/parenthesis balance.
