@@ -1,0 +1,14 @@
+# cloudflared config for a PulseFeed bridge.
+#   cloudflared tunnel --config cloudflared.yml run pulsefeed
+tunnel: pulsefeed
+credentials-file: /etc/cloudflared/pulsefeed.json
+
+ingress:
+  - hostname: pulsefeed.example.com
+    service: http://127.0.0.1:8443
+    originRequest:
+      connectTimeout: 10s
+      noTLSVerify: false
+      httpHostHeader: pulsefeed.local
+  # Everything else is refused rather than silently proxied.
+  - service: http_status:404

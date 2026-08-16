@@ -2,11 +2,32 @@
 
 Software archive for the PulseCore / Pluto 9000 CoreS3 project.
 
-## Latest firmware
+## Active firmware — PulseFeed 2.x
 
-Latest source package: `software/43_Pulse_CoreS3_WebCustomRhythms_SDLog_CompileCheck/`
+`pulsefeed/` — the current, actively developed controller. Version `2.1.0`.
 
-Current firmware version: `v43-web-custom-rhythms-sdlog-compilecheck`
+A full audit and reconstruction of the v43 sketch: the engine core is
+Arduino-free C++ so `pulsefeed/tests/` and `pulsefeed/sim/` link the exact same
+`pf_core.cpp` the firmware does (89 host tests). Adds service/test modes, the
+Milky mascot on-device, motor soft start, a deadman timer and a run limit.
+
+Build with `cd pulsefeed && tools/build.sh package`.
+
+## Archived firmware
+
+Last of the original numbered line:
+`software/43_Pulse_CoreS3_WebCustomRhythms_SDLog_CompileCheck/`
+(`v43-web-custom-rhythms-sdlog-compilecheck`).
+
+Kept for reference and for diffing against the 2.x reconstruction — note that
+v43 does not link as shipped (`changeRhythmSpeed(int)` is declared and called
+but never defined). Versions 28–42 are not archived here.
+
+## Mascot and diagram source art
+
+`docs/assets/` is the single home for the source renders. `pulsefeed/` does not
+carry its own copy; `pulsefeed/tools/build_assets.py` reads from here by default
+and emits the web-sized WebP set plus the device sprite header.
 
 ## Current control model
 

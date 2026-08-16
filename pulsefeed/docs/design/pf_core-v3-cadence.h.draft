@@ -1,0 +1,372 @@
+// =====================================================================
+//  pf_core.h  --  PulseFeed portable core  (v3 "Cadence")
+// ---------------------------------------------------------------------
+//  Zero Arduino / ESP32 / M5 code. Compiles identically on the device
+//  and on a host, which is what makes the timing unit-testable.
+//
+//  v3 restores the architecture the project was originally designed
+//  around, recovered from the plusecore repo (docs/original/):
+//
+//    * FOUR solenoids, not three. v43 collapsed them to
+//      vacuum/pulse/motor and left the fourth pin permanently off:
+//        1  main vacuum   - steadies the pull
+//        2  pulse rhythm  - the squeeze-and-rest cadence
+//        3  comfort trim  - refines the feel
+//        4  release       - the soft let-go
+//      plus the pump motor as a fifth, separate output.
+//
+//    * A FIVE-PART CADENCE rather than one fixed pulse train:
+//      pressure -> pull -> hold -> pulse -> release.
+//      The release stage is the product's stated differentiator and
+//      had never been implemented; v43 carried a `releaseMs` setting
+//      that nothing read.
+//
+//    * A pump curve. The reference hardware squealed and stalled below
+//      ~75% power, and the original design note says the useless range
+//      should be hidden from the operator rather than exposed. The pump
+//      now gets a kick pulse and a minimum useful duty.
+//
+//  Time base: monotonic microseconds as uint64_t.
+// =====================================================================
+#pragma once
+
+#include <stdint.h>
+#include <stddef.h>
+
+namespace pf {
+
+// ------------------------------------------------------------------ //
+//  Identity
+// ------------------------------------------------------------------ //
+static const char* const kVersion  = "3.0.0";
+static const char* const kProduct  = "PulseFeed";
+static const char* const kCompany  = "PulseCore";
+static const char* const kModel    = "Pluto 9000";
+static const char* const kApiLevel = "2";
+
+// ------------------------------------------------------------------ //
+//  Limits -- one source of truth for firmware, simulator, API and UI.
+// ------------------------------------------------------------------ //
+struct Limits {
+  // --- primary suction (main vacuum) --------------------------------
+  static const int kSuctionMin     = 0;
+  static const int kSuctionMax     = 100;
+
+  // --- pulsation ------------------------------------------------------
+  static const int kPpmOff         = 0;
+  static const int kPpmMin         = 30;
+  static const int kPpmMax         = 400;
+  static const int kRatioMin       = 30;    // % of period in the ON phase
+  static const int kRatioMax       = 70;
+  static const int kRatioDefault   = 60;    // 60:40 is the dairy norm
+
+  // Pulse strength: how deep the squeeze feels. Drives the comfort
+  // trim valve, which is what "refines the feel" means in hardware.
+  static const int kStrengthMin    = 0;
+  static const int kStrengthMax    = 100;
+
+  // Hold: dwell between the pull settling and the pulse train starting.
+  static const int kHoldMinMs      = 0;
+  static const int kHoldMaxMs      = 3000;
+
+  // --- release: the signature stage -----------------------------------
+  static const int kReleaseMinMs   = 200;
+  static const int kReleaseMaxMs   = 6000;
+
+  // --- stimulate lead-in ----------------------------------------------
+  // Fast, shallow pulsation before the working pull. In dairy practice
+  // this is what prompts letdown; skipping straight to full suction on
+  // a cold udder is both less effective and less kind.
+  static const int kStimSecMin     = 0;
+  static const int kStimSecMax     = 180;
+  static const int kStimPpmMin     = 60;
+  static const int kStimPpmMax     = 400;
+
+  // --- pump -----------------------------------------------------------
+  static const int kPumpMin        = 0;
+  static const int kPumpMax        = 100;
+  static const int kPumpStep       = 5;
+  // Below this the reference pump squeals and makes no useful vacuum.
+  static const int kPumpFloorMin   = 0;
+  static const int kPumpFloorMax   = 90;
+  static const int kPumpKickMsMax  = 1500;
+
+  // --- misc -------------------------------------------------------------
+  static const int kRampMin        = 1;
+  static const int kRampMax        = 10;
+  static const int kSpeedMin       = 25;
+  static const int kSpeedMax       = 400;
+  static const int kVacWindowMin   = 200;
+  static const int kVacWindowMax   = 2000;
+  static const int kBacklightMin   = 1;
+  static const int kBacklightMax   = 10;
+  static const int kRunLimitMin    = 0;
+  static const int kRunLimitMax    = 480;
+
+  static const int kRhythmSlots    = 8;
+  static const int kRhythmNameLen  = 24;
+  static const int kRhythmDataLen  = 320;
+  static const int kMaxSteps       = 48;
+};
+
+static const int kBuiltinCount = 24;
+static const int kCustomBase   = 32;
+static const int kRhythmIdMax  = kCustomBase + Limits::kRhythmSlots - 1;
+
+// ------------------------------------------------------------------ //
+//  Helpers
+// ------------------------------------------------------------------ //
+int   clampi(int v, int lo, int hi);
+long  clampl(long v, long lo, long hi);
+float clampf(float v, float lo, float hi);
+int   snapTo(int v, int step);
+int   normalizePpm(int v);
+int   normalizePump(int v);
+
+// ------------------------------------------------------------------ //
+//  JsonOut -- bounded, allocation-free JSON writer with real escaping.
+// ------------------------------------------------------------------ //
+class JsonOut {
+ public:
+  JsonOut(char* buf, size_t cap);
+
+  void beginObj();
+  void endObj();
+  void beginArr();
+  void endArr();
+
+  void key(const char* k);
+  void kvNum(const char* k, long v);
+  void kvUNum(const char* k, unsigned long v);
+  void kvReal(const char* k, float v, int decimals);
+  void kvBool(const char* k, bool v);
+  void kvStr(const char* k, const char* v);
+  void kvNull(const char* k);
+
+  void arrNum(long v);
+  void arrStr(const char* v);
+
+  size_t      length()   const { return len_; }
+  bool        overflow() const { return ovf_; }
+  const char* c_str()    const { return buf_; }
+
+ private:
+  void raw(char c);
+  void raw(const char* s);
+  void comma();
+  void escaped(const char* s);
+
+  char*  buf_;
+  size_t cap_;
+  size_t len_;
+  bool   ovf_;
+  bool   need_comma_;
+};
+
+// ------------------------------------------------------------------ //
+//  RhythmPattern -- compiled, allocation-free pulse pattern.
+// ------------------------------------------------------------------ //
+struct RhythmStep {
+  uint16_t onMs;
+  uint16_t offMs;
+};
+
+class RhythmPattern {
+ public:
+  RhythmPattern();
+
+  void clear();
+  bool compileDots(const char* pattern, uint16_t unitMs);
+  bool compileCsv(const char* csv);
+
+  bool     valid()   const { return count_ > 0 && totalMs_ > 0; }
+  uint8_t  count()   const { return count_; }
+  uint32_t totalMs() const { return totalMs_; }
+  const RhythmStep& step(int i) const { return steps_[i]; }
+
+  bool pulseAt(uint64_t elapsedUs, int speedPct) const;
+  int  stepAt(uint64_t elapsedUs, int speedPct) const;
+
+ private:
+  bool push(uint16_t onMs, uint16_t offMs);
+  void finalize();
+
+  RhythmStep steps_[Limits::kMaxSteps];
+  uint32_t   cum_[Limits::kMaxSteps];
+  uint8_t    count_;
+  uint32_t   totalMs_;
+};
+
+const char* builtinName(int id);
+const char* builtinDots(int id);
+bool        isBuiltin(int id);
+bool        isCustom(int id);
+int         customSlot(int id);
+
+// ------------------------------------------------------------------ //
+//  Settings
+// ------------------------------------------------------------------ //
+struct Settings {
+  // --- the five cadence parameters ----------------------------------
+  int  suction;         // primary pull, 0-100 %
+  int  ppm;             // pulse speed, 0 or 30-400
+  int  ratio;           // pulse ratio, 30-70 % on-phase
+  int  strength;        // pulse strength -> comfort trim depth, 0-100 %
+  int  holdMs;          // dwell after the pull settles
+  int  releaseMs;       // the soft let-go
+
+  // --- stimulate lead-in ---------------------------------------------
+  int  stimSec;
+  int  stimPpm;
+  int  stimSuction;
+
+  // --- pump ------------------------------------------------------------
+  int  pump;            // operator-facing 0-100 %
+  int  pumpFloor;       // duty below which the pump is useless
+  int  pumpKickMs;      // break-stiction pulse at start
+  bool pumpAuto;        // pump follows the session automatically
+
+  // --- response / plumbing ---------------------------------------------
+  int  vacRamp;
+  int  vacWindowMs;
+  bool vacProportional;
+  bool comfortEnabled;
+  bool releaseEnabled;
+
+  // --- rhythm -----------------------------------------------------------
+  int  rhythmId;
+  int  rhythmSpeed;
+  int  fav[3];
+
+  // --- safety -------------------------------------------------------------
+  int  runLimitMin;
+  bool autoStopOnDisconnect;
+
+  // --- ui / net ------------------------------------------------------------
+  bool darkTheme;
+  int  backlight;
+  bool webEnabled;
+  int  webPort;
+  bool authRequired;
+  int  tzOffsetMin;
+  bool dstEnabled;
+
+  void defaults();
+  void validate();
+};
+
+// ------------------------------------------------------------------ //
+//  Outputs -- five physical channels.
+// ------------------------------------------------------------------ //
+struct Outputs {
+  bool    vacOn;        // SOL1 main vacuum
+  uint8_t vacDuty;
+  bool    pulseOn;      // SOL2 pulse rhythm
+  bool    comfortOn;    // SOL3 comfort trim
+  uint8_t comfortDuty;
+  bool    releaseOn;    // SOL4 release / vent
+  bool    pumpOn;       // motor
+  uint8_t pumpDuty;
+};
+
+enum StopReason {
+  STOP_NONE = 0,
+  STOP_OPERATOR,
+  STOP_ESTOP,
+  STOP_RUN_LIMIT,
+  STOP_WATCHDOG,
+  STOP_FAULT,
+  STOP_COMPLETE,
+};
+
+// The five-part cadence, as a session state machine.
+enum Phase {
+  PH_IDLE = 0,
+  PH_PRESSURE,     // pump spins up, vacuum builds
+  PH_STIMULATE,    // fast shallow pulsation to prompt letdown
+  PH_PULL,         // primary suction reaches its set point
+  PH_HOLD,         // dwell before the working rhythm
+  PH_PULSE,        // the working cadence
+  PH_RELEASE,      // the soft let-go
+  PH_COMPLETE,
+  PH_COUNT
+};
+
+const char* phaseName(Phase p);
+
+// ------------------------------------------------------------------ //
+//  Engine
+// ------------------------------------------------------------------ //
+class Engine {
+ public:
+  Engine();
+
+  void attachPatterns(RhythmPattern* builtins, RhythmPattern* customs);
+
+  void reset(uint64_t nowUs);
+  void applySettings(const Settings& s, uint64_t nowUs);
+
+  void start(uint64_t nowUs);
+  void stop(uint64_t nowUs, StopReason why);
+  // Ask for the release stage rather than cutting: the machine walks
+  // down through PH_RELEASE and then stops on its own.
+  void requestRelease(uint64_t nowUs);
+  void triggerEstop(uint64_t nowUs);
+  bool clearEstop(uint64_t nowUs);
+
+  Outputs tick(uint64_t nowUs);
+
+  // --- observation ---------------------------------------------------
+  bool       running()   const { return running_; }
+  bool       estop()     const { return estop_; }
+  StopReason lastStop()  const { return lastStop_; }
+  Phase      phase()     const { return phase_; }
+  float      phaseProgress() const { return phaseProg_; }
+  float      vacActual() const { return vacActual_; }
+  uint32_t   runSeconds(uint64_t nowUs) const;
+  Outputs    outputs()   const { return out_; }
+  float      pulsePhase() const { return pulsePhase_; }
+  uint32_t   pulseCount() const { return pulseCount_; }
+  uint32_t   cycleCount() const { return cycleCount_; }
+
+  void feed(uint64_t nowUs) { fedUs_ = nowUs; }
+  static const uint64_t kDeadmanUs = 2500000ULL;
+
+ private:
+  void  enterPhase(Phase p, uint64_t nowUs);
+  void  recomputeDerived();
+  Outputs allOff() const;
+  uint8_t pumpDutyFor(int level, uint64_t nowUs) const;
+
+  Settings       s_;
+  RhythmPattern* builtins_;
+  RhythmPattern* customs_;
+
+  bool       running_;
+  bool       estop_;
+  bool       releaseReq_;
+  StopReason lastStop_;
+  Phase      phase_;
+
+  uint64_t   startUs_;
+  uint64_t   phaseUs_;
+  uint64_t   lastTickUs_;
+  uint64_t   pulseEpochUs_;
+  uint64_t   rhythmEpochUs_;
+  uint64_t   fedUs_;
+  uint64_t   pumpStartUs_;
+
+  float      vacActual_;
+  float      phaseProg_;
+  float      pulsePhase_;
+  uint32_t   pulseCount_;
+  uint32_t   cycleCount_;
+  bool       prevPulse_;
+
+  uint32_t   periodUs_;
+  uint32_t   onUs_;
+
+  Outputs    out_;
+};
+
+}  // namespace pf

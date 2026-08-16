@@ -1,0 +1,380 @@
+PulseCore Pluto 9000 - website direction
+
+Page 1
+
+PulseCore Pluto
+9000 Website
+Direction
+
+A practical creative brief for turning the Pluto 9000 concept into a real product website
+that can be uploaded, tested, revised, and eventually used as the public-facing foundation
+for PulseCore.
+
+Direction in one sentence: build a real product site that uses Milky for
+personality, explains Pluto 9000 clearly, demonstrates the adjustable
+milking cadence hands-on, and sells the release-focused comfort system
+without sounding generic or overly technical.
+
+This document captures the direction we moved toward after rejecting the early generic one-page look. It
+focuses on what the site should communicate, how it should feel, how Milky should be used, what
+technical details belong on the page, and what still needs to be added before launch-ready use.
+
+Brand
+
+PulseCore is the company name
+for now. Pluto 9000 is the
+product. The site should feel like
+a branded product, not an AI
+landing page.
+
+Tone
+
+Confident, direct, premium, and
+practical. No filler, no page
+instructions, no meta
+commentary, and no inner
+monologue.
+
+Core hook
+
+Any milker can pull. Pluto 9000
+is built to pull, pulse, hold, and
+release with intention.
+
+PulseCore Pluto 9000 - website direction
+
+Page 2
+
+1. The problem the website must solve
+
+The early drafts explored ideas, but they did not yet feel like a real product website.
+
+The first versions drifted toward a familiar AI-generated landing page pattern: dark gradient panels, broad
+claims, and text that described the website instead of simply selling the product. The stronger direction is
+to treat Pluto 9000 as a real machine with a real control story. The page should show what it is, why it
+matters, how the software behaves, how the four solenoids contribute, and why the release stage is the
+signature differentiator.
+
+What the site must avoid
+
+ Generic gradient hero language that could belong to any startup product.
+
+ Copy that says what should go on the page instead of presenting actual product information.
+
+ Over-explaining Milky throughout the page. Milky is introduced at the top, then used visually while the copy
+
+focuses on the product.
+
+ Dense wiring or firmware talk in the main sales copy. Technical details must be translated into benefits.
+
+ Fake polish that hides the real build path. The site should feel premium while staying grounded in the
+
+prototype direction.
+
+2. The product story
+
+Pluto 9000 is a control system for the whole milking rhythm.
+
+The central message is that the Pluto 9000 gives the operator control over the full session. It is not just a
+motor speed control and it is not just a simple pulser. It is a controller for the complete rhythm: pressure,
+vacuum pull, hold, pulse, and release.
+
+ Primary suction is the main pull level.
+
+ Pulse strength controls how pronounced the squeeze-and-rest motion feels.
+
+ Pulse speed controls the cadence of the rhythm.
+
+ Pulse hold controls the dwell between pull and pulse.
+
+ Release is the controlled let-go that makes the session feel less abrupt and more complete.
+
+The advantage should be repeated in different ways without becoming repetitive: Pluto 9000 is about
+shaping the feel of the session, not just switching suction on and off.
+
+3. Visual direction
+
+Milky blue, cream, black, and product panels instead of generic startup gradients.
+
+The color system should be rooted in the mascot: bright blue cap and label, cream/white milk body, black
+arms and shoes, and a clean black background. This gives the website a brand identity that already exists
+in the assets. The default mode can stay dark because the Milky images look strong on black, while the
+light/dark toggle remains useful for testing, demos, and presentations.
+
+Design principles
+
+ Use strong cards and panels, not floating gradient fog.
+
+ Use Milky blue as the main accent color for controls, buttons, highlights, and rhythm visuals.
+
+ Keep backgrounds simple enough that the mascot and product information stay readable.
+
+ Use large headings and direct section structure so the page feels like a product site.
+
+PulseCore Pluto 9000 - website direction
+
+Page 3
+
+ If a visual exists, it should explain software, rhythm, solenoids, release, or the product path.
+
+4. Milky usage
+
+Introduce him once, then let the images carry personality.
+
+Milky should be introduced at the top as the face of Pluto 9000. After the hero section, the site should not
+keep explaining him. The mascot should appear as visual punctuation while the copy stays focused on the
+product. The image progression matters: happy and confident near the top, relaxed in the middle, tired
+and exhausted near the bottom.
+
+5. Structure of the actual website
+
+The site should follow a practical product flow that makes sense to a first-time visitor.
+
+Section
+
+Purpose
+
+Hero
+
+Introduce PulseCore, Pluto 9000, and Milky. State the core promise: independent
+control over suction, pulse, hold, and release.
+
+Product advantage
+
+Explain that Pluto 9000 controls the full session, not just the motor.
+
+Hands-on demo
+
+Let the user adjust suction, pulse strength, pulse speed, hold, and release, then
+watch the chamber, graph, and phase strip react.
+
+Software
+
+Show main control, comfort cadence, and tuning screens. Explain operator
+benefits in direct language.
+
+Five-part cadence
+
+Define pressure, vacuum pull, hold, pulse, and release in plain English.
+
+Hardware / solenoids
+
+Explain the four solenoids as main vacuum, pulse rhythm, comfort trim, and
+release control.
+
+Testing path
+
+Show that the project is prototype-ready: service checks, logging, release path,
+enclosure, and future PCB path.
+
+Release closer
+
+End with why release matters. This is the emotional and functional close of the
+site.
+
+Contact / demo
+request
+
+Use a real contact section or a test form that can be wired to a real endpoint later.
+
+6. Copy direction
+
+PulseCore Pluto 9000 - website direction
+
+Page 4
+
+Direct product language, not filler.
+
+The copy should sound like a real company explaining a real product. It should not say "this section
+shows" or "the page should." It should simply state what Pluto 9000 does, why it matters, and how the
+operator benefits.
+
+Approved language patterns
+
+ "Control the session, not just the motor."
+
+ "A milker should not just pull. It should pull, pulse, hold, and release with intention."
+
+ "The release is the difference."
+
+ "Any milker can pull. Pluto 9000 is built to pull and let go with intention."
+
+ "Independent controls shaping one coordinated milking cadence."
+
+Language to avoid
+
+ "This section is meant to..."
+
+ "The page uses..."
+
+ "The mascot now..."
+
+ "This version moves away from..."
+
+ Any text that reads like production notes, internal design notes, or explanation of our process.
+
+7. Hands-on demo direction
+
+The demo is the main proof that the product is controllable.
+
+The interactive demo turns the product claim into something the user can feel. The visitor should move
+independent sliders and immediately see the chamber, center unit, graph, and phase strip react. This
+makes the Pluto 9000 more believable and gives the product a tangible reason to exist.
+
+Current demo controls should include primary suction, pulse strength, pulse speed in PPM, pulse hold,
+release, pause/resume, and reset. The center object should be pronounced and high contrast, with
+internal bars, a beam/core, and visible reactions to slider changes.
+
+The demo does not need to be a perfect engineering simulator. Its job is to sell the control concept and
+make the rhythm understandable. It should behave consistently, smoothly, and obviously enough that a
+farmer, investor, or tester understands the advantage without needing a lecture.
+
+8. Software direction
+
+The screenshots should look like product screens, not placeholders.
+
+The site should show controller screens because software is a major part of the Pluto 9000 story. The
+screen set should include main control, comfort cadence, and session tuning. The screens do not need to
+be final, but they should look intentional and consistent with the actual controller UI direction.
+
+ Main control: current vacuum, pulse rhythm, start controls, and quick navigation.
+
+ Comfort cadence: the five phases as a readable sequence with live curve behavior.
+
+ Session tuning: large controls for suction, pulse strength, pulse speed, hold, and release.
+
+ Service/check screens: future addition for firing individual valves, verifying pump behavior, and checking
+
+release function.
+
+9. Hardware and solenoid explanation
+
+PulseCore Pluto 9000 - website direction
+
+Page 5
+
+Keep it simple, but real.
+
+The four-solenoid explanation should be included because it is a real differentiator, but it should stay in
+marketing language on the public-facing page. The visitor should understand what the four actions do
+without needing a wiring diagram.
+
+Solenoid action
+
+How to describe it on the site
+
+Main vacuum control
+
+Manages the primary pull so the session feels steady, confident, and
+controlled.
+
+Pulse rhythm control
+
+Creates the repeating squeeze-and-rest motion that gives the system its
+cadence.
+
+Comfort trim control
+
+Adds another layer of adjustment for refining the feel of the machine.
+
+Release control
+
+Provides the soft let-go stage that helps the cycle reset naturally.
+
+10. Release as the core differentiator
+
+This should be the strongest product argument near the bottom of the page.
+
+The release stage is the emotional and functional closer. It is the part of the Pluto 9000 story that makes
+the product sound different from a basic suction machine. The best line is simple: "Any milker can pull.
+Pluto 9000 is built to pull and let go with intention."
+
+ Less abrupt change at the end of the working pull.
+
+ A more complete cycle with a clear reset point.
+
+ A smoother rhythm that feels more refined and less homemade.
+
+ A product feature that is easy to demonstrate visually.
+
+11. Upload-ready expectations
+
+The site should be easy to test as a real web page.
+
+The bundle direction is correct: the latest page should be named index.html, older versions can be kept
+as index1.html, index2.html, and so on, and the page should reference images and support graphics from
+a local assets folder. That makes it easy to upload to a static host for testing.
+
+ Working assets folder with all referenced images and SVGs.
+
+ Real contact form endpoint or demo-request email workflow.
+
+ Clean mobile responsiveness, especially for the interactive demo controls.
+
+ Alt text for mascot images and UI screenshots.
+
+ Final tone pass so no internal notes, placeholders, or process explanations remain.
+
+12. Next creative pass
+
+What should improve next.
+
+PulseCore Pluto 9000 - website direction
+
+Page 6
+
+The current site is much closer to the requested direction, but the next pass should make it feel even
+more like a finished product website. The highest-value improvements are visual polish, stronger real
+product imagery, better form handling, and a deeper software demo that resembles the actual CoreS3
+controller UI.
+
+ Product realism: add photos or renderings of the physical controller box, ports, tubing, and chamber once
+
+available.
+
+ Milky integration: use the new sitting/splashing/drinking Milky images as playful image-only placements,
+
+not as copy topics.
+
+ Software accuracy: replace SVG mockups with screenshots from the working CoreS3/web app when stable.
+
+ Demo fidelity: make the graph and phase timing closer to the actual pulse logic, including PPM and hold
+
+behavior.
+
+ Technical page: eventually add a separate specs page for pump, valves, power, release, enclosure, and PCB
+
+path.
+
+Final direction summary
+
+The Pluto 9000 site should feel specific, confident, and real.
+
+The website direction is now clear: lead with a recognizable brand face, explain the product in simple
+terms, demonstrate the independent controls, show the software, explain the four-solenoid system, and
+close on the release stage as the defining comfort advantage. Milky adds personality, but the product
+carries the page.
+
+Keep
+
+Change / avoid
+
+Milky blue / cream / black color scheme
+
+Generic AI gradient one-pager look
+
+Hands-on adjustable cadence demo
+
+Static claims with no proof of control
+
+Clear product language
+
+Meta copy, filler, or internal instructions
+
+Milky introduced at top, visual-only later
+
+Talking about Milky repeatedly throughout the page
+
+Release as the core differentiator
+
+Treating release as a small technical detail
