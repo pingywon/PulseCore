@@ -1,0 +1,486 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="PulseFeed Pluto 9000 — a programmable three-channel vacuum, pulsation and motor controller with a touchscreen, a web dashboard and deterministic pulse timing.">
+<meta name="color-scheme" content="dark">
+<title>PulseFeed — programmable pulsation control</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+--bg:#070b11;--bg2:#0c121b;--pan:#131b26;--line:#22303f;
+--tx:#e9eff8;--mu:#8598ad;
+--ac:#35c6f4;--ac2:#4fe3a8;--wa:#ffb13d;--da:#ff4d5a;
+--max:1140px}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--tx);
+font:16px/1.6 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:var(--ac);text-decoration:none}
+.wrap{max-width:var(--max);margin:auto;padding:0 22px}
+section{padding:88px 0;position:relative}
+h1,h2,h3{line-height:1.15;letter-spacing:-.02em}
+h2{font-size:clamp(28px,4vw,42px);font-weight:800}
+h3{font-size:19px;font-weight:700}
+.eyebrow{font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+color:var(--ac2);font-weight:700;margin-bottom:12px}
+.lede{color:var(--mu);font-size:clamp(16px,1.6vw,18.5px);max-width:62ch;margin-top:14px}
+
+/* ---------- nav ---------- */
+nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);
+background:rgba(7,11,17,.8);border-bottom:1px solid var(--line)}
+.nv{display:flex;align-items:center;gap:26px;padding:13px 22px;max-width:var(--max);margin:auto}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:-.01em}
+.mark{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;
+background:conic-gradient(from 210deg,var(--ac),var(--ac2),var(--ac));
+color:#06121b;font-size:13px;font-weight:900}
+.nv .sp{flex:1}
+.nv a.l{color:var(--mu);font-size:14.5px;font-weight:600}
+.nv a.l:hover{color:var(--tx)}
+.btn{display:inline-block;border-radius:11px;padding:11px 20px;font-weight:800;
+font-size:14.5px;border:1px solid var(--line);color:var(--tx);white-space:nowrap}
+.btn.p{background:linear-gradient(135deg,var(--ac2),#33c9e0);color:#04121a;border-color:transparent}
+.btn.p:hover{filter:brightness(1.08)}
+.btn:hover{border-color:#3d5570}
+@media(max-width:820px){.nv a.l{display:none}}
+
+/* ---------- hero ---------- */
+.hero{padding:92px 0 70px;overflow:hidden}
+.hero::before{content:"";position:absolute;inset:-30% 0 auto;height:760px;pointer-events:none;
+background:radial-gradient(760px 380px at 22% 8%,rgba(53,198,244,.16),transparent 62%),
+radial-gradient(620px 340px at 82% 24%,rgba(79,227,168,.13),transparent 60%)}
+.hgrid{display:grid;grid-template-columns:1.05fr .95fr;gap:52px;align-items:center;position:relative}
+@media(max-width:900px){.hgrid{grid-template-columns:1fr;gap:40px}}
+.hero h1{font-size:clamp(38px,6.2vw,64px);font-weight:850}
+.hero h1 em{font-style:normal;background:linear-gradient(100deg,var(--ac),var(--ac2));
+-webkit-background-clip:text;background-clip:text;color:transparent}
+.pill{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);
+background:rgba(19,27,38,.7);border-radius:999px;padding:7px 14px;font-size:12.5px;
+color:var(--mu);font-weight:600;margin-bottom:20px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--ac2);
+box-shadow:0 0 10px var(--ac2);animation:bp 1.6s infinite}
+@keyframes bp{0%,100%{opacity:1}50%{opacity:.25}}
+.cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:30px}
+.stats{display:flex;gap:30px;flex-wrap:wrap;margin-top:34px;padding-top:26px;
+border-top:1px solid var(--line)}
+.stat b{display:block;font-size:25px;font-weight:800;font-variant-numeric:tabular-nums}
+.stat span{font-size:12.5px;color:var(--mu)}
+
+/* ---------- device art ---------- */
+.device{position:relative;filter:drop-shadow(0 30px 60px rgba(0,0,0,.6))}
+.device svg{width:100%;height:auto;display:block}
+
+/* ---------- cards ---------- */
+.grid{display:grid;gap:18px;margin-top:44px}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g2{grid-template-columns:repeat(2,1fr)}
+@media(max-width:900px){.g3,.g2{grid-template-columns:1fr}}
+.card{background:linear-gradient(180deg,var(--pan),#0d141d);border:1px solid var(--line);
+border-radius:16px;padding:26px;transition:border-color .2s,transform .2s}
+.card:hover{border-color:#31465e;transform:translateY(-2px)}
+.card p{color:var(--mu);font-size:14.5px;margin-top:9px}
+.ico{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;
+margin-bottom:15px;background:rgba(53,198,244,.11);border:1px solid rgba(53,198,244,.22)}
+.ico.m{background:rgba(79,227,168,.11);border-color:rgba(79,227,168,.22)}
+.ico.w{background:rgba(255,177,61,.11);border-color:rgba(255,177,61,.22)}
+.ico.r{background:rgba(255,77,90,.11);border-color:rgba(255,77,90,.22)}
+
+.alt{background:linear-gradient(180deg,var(--bg2),var(--bg));
+border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+
+/* ---------- channel diagram ---------- */
+.chan{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:40px}
+@media(max-width:820px){.chan{grid-template-columns:1fr}}
+.ch{border:1px solid var(--line);border-radius:16px;padding:22px;background:var(--pan);
+position:relative;overflow:hidden}
+.ch::after{content:"";position:absolute;left:0;top:0;width:100%;height:3px}
+.ch.c1::after{background:var(--ac2)}
+.ch.c2::after{background:var(--ac)}
+.ch.c3::after{background:var(--wa)}
+.ch code{font-size:11.5px;color:var(--mu);letter-spacing:.08em;font-weight:700}
+.ch b{display:block;font-size:19px;margin:6px 0 4px}
+.ch .rng{font-variant-numeric:tabular-nums;color:var(--ac);font-weight:700;font-size:14px}
+.ch p{color:var(--mu);font-size:14px;margin-top:9px}
+
+/* ---------- table ---------- */
+.tbl{width:100%;border-collapse:collapse;margin-top:34px;font-size:14.5px}
+.tbl th,.tbl td{padding:13px 14px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.tbl th{color:var(--mu);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:700}
+.tbl td:first-child{font-weight:700;white-space:nowrap}
+.tbl .old{color:var(--mu)}
+.tbl .new{color:var(--ac2)}
+
+/* ---------- code ---------- */
+pre{background:#080d14;border:1px solid var(--line);border-radius:13px;padding:18px;
+overflow-x:auto;font:13px/1.65 ui-monospace,SFMono-Regular,Menlo,monospace;color:#cfe0f0}
+pre .c{color:#5f7488}pre .k{color:var(--ac)}pre .s{color:var(--ac2)}
+
+/* ---------- safety ---------- */
+.safe{border:1px solid rgba(255,77,90,.3);background:rgba(255,77,90,.05);
+border-radius:16px;padding:26px}
+.safe h3{color:var(--da)}
+.safe ul{margin:12px 0 0 20px;color:var(--mu);font-size:14.5px}
+.safe li{margin:7px 0}
+
+/* ---------- footer ---------- */
+footer{border-top:1px solid var(--line);padding:44px 0;color:var(--mu);font-size:13.5px}
+.fg{display:flex;gap:36px;flex-wrap:wrap;align-items:flex-start}
+.fg .sp{flex:1}
+.fcol b{display:block;color:var(--tx);font-size:12.5px;letter-spacing:.1em;
+text-transform:uppercase;margin-bottom:10px}
+.fcol a{display:block;color:var(--mu);margin:6px 0}
+.fcol a:hover{color:var(--tx)}
+.note{margin-top:30px;padding-top:22px;border-top:1px solid var(--line);font-size:12.5px;line-height:1.7}
+</style>
+</head>
+<body>
+
+<nav><div class="nv">
+  <a class="logo" href="#top"><span class="mark">PF</span> PulseFeed</a>
+  <span class="sp"></span>
+  <a class="l" href="#how">How it works</a>
+  <a class="l" href="#channels">Channels</a>
+  <a class="l" href="#software">Software</a>
+  <a class="l" href="#remote">Remote</a>
+  <a class="l" href="docs.html">Docs</a>
+  <a class="btn p" href="#get">Get the build</a>
+</div></nav>
+
+<!-- ============ HERO ============ -->
+<header class="hero" id="top"><div class="wrap"><div class="hgrid">
+  <div>
+    <span class="pill"><span class="dot"></span> Pluto 9000 &middot; firmware v2.0</span>
+    <h1>Pulsation you can<br><em>actually trust</em> to keep time.</h1>
+    <p class="lede">PulseFeed is a three-channel vacuum, pulsation and motor controller
+      built on an M5Stack CoreS3. Rate and ratio are held by a dedicated real-time task,
+      so the pulse stays exactly where you set it whether the screen is idle or six
+      people have the dashboard open.</p>
+    <div class="cta">
+      <a class="btn p" href="#get">Download firmware &amp; tools</a>
+      <a class="btn" href="#software">See what changed</a>
+    </div>
+    <div class="stats">
+      <div class="stat"><b>30&ndash;400</b><span>pulses per minute</span></div>
+      <div class="stat"><b>30:70&ndash;70:30</b><span>pulsation ratio</span></div>
+      <div class="stat"><b>1&nbsp;kHz</b><span>real-time control loop</span></div>
+      <div class="stat"><b>32</b><span>patterns incl. 8 recordable</span></div>
+    </div>
+  </div>
+
+  <div class="device">
+    <svg viewBox="0 0 420 340" role="img" aria-label="Pluto 9000 controller with its touchscreen dashboard">
+      <defs>
+        <linearGradient id="case" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#26333f"/><stop offset="1" stop-color="#121a23"/>
+        </linearGradient>
+        <linearGradient id="scr" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#0d1520"/><stop offset="1" stop-color="#0a1119"/>
+        </linearGradient>
+        <linearGradient id="glow" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#35c6f4"/><stop offset="1" stop-color="#4fe3a8"/>
+        </linearGradient>
+      </defs>
+
+      <!-- body -->
+      <rect x="52" y="26" width="316" height="264" rx="26" fill="url(#case)" stroke="#38495c"/>
+      <rect x="66" y="40" width="288" height="222" rx="14" fill="url(#scr)" stroke="#223244"/>
+
+      <!-- top bar -->
+      <rect x="74" y="48" width="272" height="26" rx="8" fill="#141b26"/>
+      <text x="86" y="66" fill="#e9eff8" font-family="sans-serif" font-size="12" font-weight="700">Pluto 9000</text>
+      <g fill="#4fe3a8">
+        <rect x="252" y="60" width="3" height="6" rx="1"/><rect x="257" y="57" width="3" height="9" rx="1"/>
+        <rect x="262" y="54" width="3" height="12" rx="1"/><rect x="267" y="51" width="3" height="15" rx="1"/>
+      </g>
+      <rect x="280" y="52" width="60" height="19" rx="6" fill="#ff4d5a"/>
+      <text x="310" y="65.5" fill="#fff" font-family="sans-serif" font-size="9.5"
+            font-weight="800" text-anchor="middle">E-STOP</text>
+
+      <!-- channel rows -->
+      <g font-family="sans-serif" font-size="8.5" font-weight="700">
+        <rect x="74" y="80" width="272" height="24" rx="7" fill="#141b26"/>
+        <text x="84" y="95" fill="#8598ad">VACUUM</text>
+        <rect x="140" y="88" width="130" height="7" rx="3.5" fill="#22314a"/>
+        <rect x="140" y="88" width="88" height="7" rx="3.5" fill="#4fe3a8"/>
+        <text x="322" y="95.5" fill="#e9eff8" text-anchor="end" font-size="10">68%</text>
+
+        <rect x="74" y="108" width="272" height="24" rx="7" fill="#141b26"/>
+        <text x="84" y="123" fill="#8598ad">PULSE</text>
+        <rect x="140" y="116" width="130" height="7" rx="3.5" fill="#22314a"/>
+        <rect x="140" y="116" width="42" height="7" rx="3.5" fill="#35c6f4"/>
+        <text x="316" y="123.5" fill="#e9eff8" text-anchor="end" font-size="10">120</text>
+        <circle cx="332" cy="120" r="5" fill="#35c6f4"><animate attributeName="r"
+          values="5;2.5;5" dur="0.5s" repeatCount="indefinite"/></circle>
+
+        <rect x="74" y="136" width="272" height="24" rx="7" fill="#141b26"/>
+        <text x="84" y="151" fill="#8598ad">MOTOR</text>
+        <rect x="140" y="144" width="130" height="7" rx="3.5" fill="#22314a"/>
+        <rect x="140" y="144" width="52" height="7" rx="3.5" fill="#ffb13d"/>
+        <text x="322" y="151.5" fill="#e9eff8" text-anchor="end" font-size="10">40%</text>
+      </g>
+
+      <!-- waveform -->
+      <rect x="74" y="166" width="272" height="42" rx="8" fill="#0b111b" stroke="#22314a"/>
+      <polyline fill="none" stroke="#35c6f4" stroke-width="2.2"
+        points="82,200 82,176 116,176 116,200 150,200 150,176 184,176 184,200 218,200 218,176 252,176 252,200 286,200 286,176 320,176 320,200 338,200"/>
+
+      <!-- start + nav -->
+      <rect x="74" y="214" width="130" height="40" rx="10" fill="#4fe3a8"/>
+      <text x="139" y="239" fill="#06121b" font-family="sans-serif" font-size="14"
+            font-weight="800" text-anchor="middle">START</text>
+      <rect x="212" y="214" width="134" height="40" rx="10" fill="#1e2836" stroke="#2a3646"/>
+      <text x="279" y="239" fill="#8598ad" font-family="sans-serif" font-size="11.5"
+            font-weight="700" text-anchor="middle">GRAPHS &middot; NET</text>
+
+      <!-- channel pigtails -->
+      <g stroke="#38495c" stroke-width="7" stroke-linecap="round" fill="none">
+        <path d="M120 290 L120 320"/><path d="M210 290 L210 326"/><path d="M300 290 L300 320"/>
+      </g>
+      <g stroke-width="3" stroke-linecap="round" fill="none">
+        <path d="M120 292 L120 318" stroke="#4fe3a8"/>
+        <path d="M210 292 L210 324" stroke="#35c6f4"/>
+        <path d="M300 292 L300 318" stroke="#ffb13d"/>
+      </g>
+      <g font-family="sans-serif" font-size="9" font-weight="700" text-anchor="middle" fill="#8598ad">
+        <text x="120" y="334">CH1 G5</text><text x="210" y="338">CH2 G6</text><text x="300" y="334">CH3 G7</text>
+      </g>
+    </svg>
+  </div>
+</div></div></header>
+
+<!-- ============ HOW ============ -->
+<section id="how" class="alt"><div class="wrap">
+  <div class="eyebrow">How it works</div>
+  <h2>Three outputs, one clock, no drift</h2>
+  <p class="lede">Vacuum, pulsation and motor are independent. Changing one never
+    interrupts the others, and none of them are at the mercy of whatever the
+    screen or the network happens to be doing.</p>
+
+  <div class="chan" id="channels">
+    <div class="ch c1"><code>CH1 &middot; GPIO 5</code><b>Vacuum</b>
+      <span class="rng">0&ndash;100%</span>
+      <p>Duty-windowed solenoid or a proportional valve on hardware PWM.
+        A first-order response model with a tunable time constant, so the ramp
+        behaves the same under any load.</p></div>
+    <div class="ch c2"><code>CH2 &middot; GPIO 6</code><b>Pulsation</b>
+      <span class="rng">0, 30&ndash;400 PPM &middot; ratio 30&ndash;70%</span>
+      <p>The heart of it. Rate and on:off ratio are both set independently.
+        Or hand the channel to one of 32 rhythm patterns.</p></div>
+    <div class="ch c3"><code>CH3 &middot; GPIO 7</code><b>Motor</b>
+      <span class="rng">0&ndash;100% in 5% steps</span>
+      <p>20 kHz hardware PWM with a configurable soft start, so the motor ramps
+        instead of slamming to full and it runs above the audible range.</p></div>
+  </div>
+
+  <div class="grid g3">
+    <div class="card">
+      <div class="ico"><svg width="19" height="19" viewBox="0 0 24 24" fill="none"
+        stroke="#35c6f4" stroke-width="2.2"><path d="M12 6v6l4 2"/><circle cx="12" cy="12" r="9"/></svg></div>
+      <h3>Timing that holds</h3>
+      <p>The channel engine runs at 1&nbsp;kHz in its own high-priority task on its own
+        core. Repainting the screen, serving the dashboard and writing the SD log all
+        happen underneath it and cannot stretch a pulse.</p>
+    </div>
+    <div class="card">
+      <div class="ico m"><svg width="19" height="19" viewBox="0 0 24 24" fill="none"
+        stroke="#4fe3a8" stroke-width="2.2"><path d="M20 6L9 17l-5-5"/></svg></div>
+      <h3>Proven, not asserted</h3>
+      <p>The engine is plain C++ with no hardware dependencies, so the same code the
+        device runs is exercised by 89 host tests &mdash; pulse counts at five rates,
+        measured duty at five ratios, and every safety interlock.</p>
+    </div>
+    <div class="card">
+      <div class="ico w"><svg width="19" height="19" viewBox="0 0 24 24" fill="none"
+        stroke="#ffb13d" stroke-width="2.2"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg></div>
+      <h3>Records what happened</h3>
+      <p>Every start, stop, setting change and interlock trip lands in a daily CSV on
+        the SD card, queued from a ring buffer so the card is never touched from a
+        control path. Load it in the built-in report page.</p>
+    </div>
+  </div>
+</div></section>
+
+<!-- ============ SOFTWARE ============ -->
+<section id="software"><div class="wrap">
+  <div class="eyebrow">Firmware 2.0</div>
+  <h2>Rebuilt from a single 2,900-line file</h2>
+  <p class="lede">The previous firmware was one sketch holding the UI, the web server,
+    the SD logger and the pulse timing in the same loop. Version 2 splits the
+    safety-critical core out where it can be tested, and fixes what that exposed.</p>
+
+  <table class="tbl">
+    <thead><tr><th>Area</th><th>Was</th><th>Now</th></tr></thead>
+    <tbody>
+      <tr><td>Build</td>
+        <td class="old">Did not link &mdash; a called function was declared but never defined</td>
+        <td class="new">Compiles clean; 1.23&nbsp;MB flash, 23% RAM</td></tr>
+      <tr><td>Pulse timing</td>
+        <td class="old">Computed in the same loop as HTTP and SD writes</td>
+        <td class="new">Dedicated 1&nbsp;kHz task, pinned, high priority</td></tr>
+      <tr><td>E-stop</td>
+        <td class="old">Opened a confirmation screen; outputs stayed live</td>
+        <td class="new">De-energises on press, then asks about pressure</td></tr>
+      <tr><td>Motor</td>
+        <td class="old">2&nbsp;Hz bit-banged square wave</td>
+        <td class="new">20&nbsp;kHz hardware PWM with soft start</td></tr>
+      <tr><td>Pulsation ratio</td>
+        <td class="old">Fixed at 50:50</td>
+        <td class="new">Adjustable 30:70 to 70:30</td></tr>
+      <tr><td>Web access</td>
+        <td class="old">No authentication; state changes over GET</td>
+        <td class="new">PIN, bearer tokens, POST-only, rate limited</td></tr>
+      <tr><td>Setup radio</td>
+        <td class="old">Open access point</td>
+        <td class="new">WPA2 with a per-device key</td></tr>
+      <tr><td>Watchdog</td>
+        <td class="old">None &mdash; a hung loop left channels energised</td>
+        <td class="new">Deadman stops the machine if the supervisor stalls</td></tr>
+      <tr><td>Screens</td>
+        <td class="old">Settings and Live were unreachable from the device</td>
+        <td class="new">Persistent tab bar; every screen reachable</td></tr>
+      <tr><td>Flash wear</td>
+        <td class="old">~30 keys rewritten on every slider nudge</td>
+        <td class="new">Changed keys only, batched on idle</td></tr>
+    </tbody>
+  </table>
+</div></section>
+
+<!-- ============ REMOTE ============ -->
+<section id="remote" class="alt"><div class="wrap">
+  <div class="eyebrow">Remote access</div>
+  <h2>Share it without handing over the machine</h2>
+  <p class="lede">The bridge is a reverse proxy that sits in front of the controller
+    with its own auth, its own rate limiting and an audit log. It runs in a mode that
+    caps what remote clients can do &mdash; and the default mode cannot start anything.</p>
+
+  <div class="grid g2">
+    <div class="card">
+      <h3>A ladder, not a switch</h3>
+      <table class="tbl" style="margin-top:16px;font-size:13.5px">
+        <thead><tr><th>Mode</th><th>Read</th><th>Stop</th><th>Turn down</th><th>Start</th></tr></thead>
+        <tbody>
+          <tr><td>readonly</td><td>&check;</td><td>&check;</td><td>&mdash;</td><td>&mdash;</td></tr>
+          <tr><td>supervise</td><td>&check;</td><td>&check;</td><td>&check;</td><td>&mdash;</td></tr>
+          <tr><td>control</td><td>&check;</td><td>&check;</td><td>&check;</td><td>&mdash;</td></tr>
+          <tr><td>full</td><td>&check;</td><td>&check;</td><td>&check;</td><td>&check;</td></tr>
+        </tbody>
+      </table>
+      <p>Stop and e-stop are permitted in every mode including read-only. If remote
+        access can see a problem, it must always be able to stop it.</p>
+    </div>
+    <div class="card">
+      <h3>Point the tunnel at the bridge</h3>
+      <pre><span class="c"># bridge in front of the device</span>
+./pulsefeed-bridge.py \
+  --target <span class="s">http://192.168.13.50</span> \
+  --listen <span class="s">127.0.0.1:8443</span> \
+  --mode <span class="k">readonly</span> \
+  --audit /var/log/pulsefeed/audit.jsonl
+
+<span class="c"># cloudflare tunnel in front of the bridge</span>
+cloudflared tunnel run pulsefeed</pre>
+      <p>Ready-made configs for Cloudflare Tunnel, nginx, Caddy and systemd ship in
+        <code>bridge/</code>. No port forwarding required.</p>
+    </div>
+  </div>
+</div></section>
+
+<!-- ============ SAFETY ============ -->
+<section id="safety"><div class="wrap">
+  <div class="eyebrow">Safety</div>
+  <h2>What the software guarantees &mdash; and what it can't</h2>
+  <div class="grid g2" style="margin-top:34px">
+    <div class="card">
+      <div class="ico m"><svg width="19" height="19" viewBox="0 0 24 24" fill="none"
+        stroke="#4fe3a8" stroke-width="2.2"><path d="M12 3l8 4v5c0 5-3.4 8.4-8 9-4.6-.6-8-4-8-9V7z"/></svg></div>
+      <h3>Interlocks in the firmware</h3>
+      <ul style="margin:12px 0 0 20px;color:var(--mu);font-size:14.5px">
+        <li>Outputs driven to a safe state before anything else initialises</li>
+        <li>E-stop cuts all three channels on the press, then latches</li>
+        <li>Deadman: a stalled supervisor stops the machine within 2.5&nbsp;s</li>
+        <li>Configurable maximum run time, on by default</li>
+        <li>Optional stop-on-network-loss for unattended supervision</li>
+        <li>Every setting clamped on load, on write and before save</li>
+      </ul>
+    </div>
+    <div class="safe">
+      <h3>Read this before you rely on it</h3>
+      <ul>
+        <li>This is prototype control software, not a certified safety system.
+          It has no third-party assessment and no redundancy.</li>
+        <li>Software interlocks cannot protect against a shorted driver, a welded
+          relay or a failed MOSFET. Anything that must fail safe needs a hardware
+          interlock that does not go through the microcontroller.</li>
+        <li>The output polarity in <code>pf_config.h</code> reproduces the previous
+          firmware's behaviour and has not been verified against a physical board.
+          Confirm it with the channels disconnected before you connect a load.</li>
+        <li>Remote access is convenience, not supervision. Do not run a machine
+          nobody is standing next to.</li>
+      </ul>
+    </div>
+  </div>
+</div></section>
+
+<!-- ============ GET ============ -->
+<section id="get" class="alt"><div class="wrap">
+  <div class="eyebrow">Get it</div>
+  <h2>Everything in one archive</h2>
+  <p class="lede">Firmware, the host simulator, the bridge, the test suite, this site
+    and the full engineering write-up.</p>
+
+  <div class="grid g3" style="margin-top:38px">
+    <div class="card">
+      <h3>Flash the firmware</h3>
+      <pre>arduino-cli compile --fqbn \
+  esp32:esp32:m5stack_cores3 \
+  firmware/pulsefeed
+
+arduino-cli upload -p /dev/ttyACM0 \
+  --fqbn esp32:esp32:m5stack_cores3 \
+  firmware/pulsefeed</pre>
+    </div>
+    <div class="card">
+      <h3>Try it with no hardware</h3>
+      <pre><span class="c"># builds and runs the real engine</span>
+tools/build.sh sim
+./dist/pulsefeed-sim --port 8080</pre>
+      <p>The simulator serves the same dashboard and the same API the device does.</p>
+    </div>
+    <div class="card">
+      <h3>Run the tests</h3>
+      <pre>tools/build.sh test
+
+<span class="c"># 89 assertions over the engine
+# the firmware actually ships</span></pre>
+    </div>
+  </div>
+</div></section>
+
+<footer><div class="wrap">
+  <div class="fg">
+    <div style="max-width:280px">
+      <a class="logo" href="#top"><span class="mark">PF</span> PulseFeed</a>
+      <p style="margin-top:12px">Programmable three-channel vacuum, pulsation and
+        motor control for M5Stack CoreS3.</p>
+    </div>
+    <span class="sp"></span>
+    <div class="fcol"><b>Product</b>
+      <a href="#how">How it works</a><a href="#channels">Channels</a>
+      <a href="#software">Firmware 2.0</a><a href="#safety">Safety</a></div>
+    <div class="fcol"><b>Build</b>
+      <a href="docs.html">Documentation</a><a href="docs.html#api">REST API</a>
+      <a href="#remote">Remote access</a><a href="#get">Downloads</a></div>
+  </div>
+  <div class="note">
+    <b style="color:var(--tx)">Pluto&nbsp;9000</b> is prototype hardware and prototype
+    software. It is not a medical device, not a certified safety system, and carries
+    no warranty of fitness for any particular purpose. Anything that must fail safe
+    needs a hardware interlock independent of this controller.
+    <br><br>
+    Firmware v2.0.0 &middot; API level 1 &middot; core engine covered by 89 host tests.
+  </div>
+</div></footer>
+
+</body>
+</html>

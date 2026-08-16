@@ -33,7 +33,7 @@ running processes I exercised end to end, not sketches.
 | `web/src/` | Dashboard and report page. Gzipped into the firmware at build time. |
 | `site/` | Marketing site and technical documentation. |
 | `tools/` | Build driver, web-asset packer, archive packer. |
-| `legacy/v43_original/` | Your original sketch, untouched, for diffing. |
+| `../software/43_Pulse_CoreS3_WebCustomRhythms_SDLog_CompileCheck/` | The original v43 sketch, untouched, for diffing. Lives once, in the archive. |
 
 ---
 

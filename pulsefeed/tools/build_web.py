@@ -42,7 +42,10 @@ def minify(text: str) -> str:
 
 
 def emit(name: str, symbol: str, data: bytes, fh) -> int:
-    packed = gzip.compress(data, 9)
+    # mtime=0: without it every build stamps a fresh timestamp into the gzip
+    # header, so pf_web.h shows up as modified on every single build even
+    # when the HTML has not changed.
+    packed = gzip.compress(data, 9, mtime=0)
     fh.write(f"\n// {name}: {len(data)} bytes raw -> {len(packed)} bytes gzipped\n")
     fh.write(f"static const size_t {symbol}_LEN = {len(packed)};\n")
     fh.write(f"static const uint8_t {symbol}[] PROGMEM = {{\n")

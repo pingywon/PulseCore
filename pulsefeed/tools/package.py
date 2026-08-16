@@ -14,11 +14,25 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 DIST = ROOT / "dist"
 NAME = f"pulsefeed-{(ROOT / 'VERSION').read_text().strip()}"
 
-INCLUDE_DIRS = ["firmware", "sim", "tests", "bridge", "site", "web", "tools", "docs", "legacy"]
+INCLUDE_DIRS = ["firmware", "sim", "tests", "bridge", "site", "web", "tools", "docs"]
+
+# The original v43 sketch lives once, in the repo's archive, rather than being
+# duplicated under pulsefeed/. Ship it in the archive anyway -- it is the
+# baseline the 2.x reconstruction is meant to be diffed against.
+V43_DIR = ROOT.parent / "software" / "43_Pulse_CoreS3_WebCustomRhythms_SDLog_CompileCheck"
 INCLUDE_FILES = ["README.md", "LICENSE", "VERSION", "CHANGELOG.md"]
 
 SKIP_SUFFIX = (".o", ".pyc", ".swp")
 SKIP_PARTS = {"__pycache__", ".git", "build", "cache"}
+
+
+def arcrel(p: pathlib.Path) -> pathlib.PurePath:
+    """Path as it should appear inside the archive."""
+    try:
+        return p.relative_to(ROOT)
+    except ValueError:
+        # Outside pulsefeed/ -- currently only the v43 baseline.
+        return pathlib.PurePath("v43_original") / p.relative_to(V43_DIR)
 
 
 def wanted(p: pathlib.Path) -> bool:
@@ -34,6 +48,10 @@ def collect():
         if not base.is_dir():
             continue
         for p in sorted(base.rglob("*")):
+            if p.is_file() and wanted(p):
+                out.append(p)
+    if V43_DIR.is_dir():
+        for p in sorted(V43_DIR.rglob("*")):
             if p.is_file() and wanted(p):
                 out.append(p)
     for f in INCLUDE_FILES:
@@ -67,7 +85,7 @@ def main():
     lines = []
     with zipfile.ZipFile(zpath, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as z:
         for p in files:
-            rel = p.relative_to(ROOT)
+            rel = arcrel(p)
             arc = f"{NAME}/{rel}"
             z.write(p, arc)
             digest = hashlib.sha256(p.read_bytes()).hexdigest()

@@ -1,5 +1,27 @@
 # Changelog
 
+## Unreleased -- consolidated into the PulseCore repo
+
+No firmware behaviour change. Repository and build-tooling only.
+
+### Changed
+- Moved into `PulseCore/pulsefeed/`. The standalone `pingywon/pulsefeed` repo
+  it used to live in was deleted; this tree was the only surviving copy.
+- The v43 baseline is no longer duplicated here. It lives once, at
+  `../software/43_Pulse_CoreS3_WebCustomRhythms_SDLog_CompileCheck/`, which is
+  the more complete copy (it carries a README the old duplicate lacked).
+  `tools/package.py` still ships it in the archive, as `v43_original/`.
+- The 41 mascot renders and 4 UI/wiring SVGs are likewise no longer duplicated;
+  `tools/build_assets.py` reads `../docs/assets` by default.
+
+### Fixed
+- `tools/package.py` had the archive version hardcoded to `2.0.0`, so it kept
+  naming the zip `pulsefeed-2.0.0.zip` after VERSION moved to 2.1.0. It now
+  reads `VERSION`.
+- `tools/build_web.py` now gzips with `mtime=0`. Without it every build stamped
+  a fresh timestamp into the gzip header, so `pf_web.h` showed as modified on
+  every build even when no HTML had changed.
+
 ## 2.1.0 -- service modes + Milky
 
 ### Added
