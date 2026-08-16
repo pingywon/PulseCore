@@ -1,32 +1,35 @@
-# v43 Pulse CoreS3 Web Custom Rhythms + SD Log Compile Check
+# 43 Pulse CoreS3 Web Custom Rhythms SD Log Compile Check
 
-Latest firmware package generated in ChatGPT for the PulseCore / Pluto 9000 CoreS3 project.
+Current firmware package for the PulseCore / Pluto 9000 CoreS3 prototype.
 
-## Version
+Firmware version string:
 
-`v43-web-custom-rhythms-sdlog-compilecheck`
-
-## Firmware scope
-
-- 3-channel model: `G5 = VAC`, `G6 = PPM/Rhythm`, `G7 = Motor`.
-- No Bluetooth / BLE / WiFiProv.
-- Local-first boot with setup AP + web portal.
-- 20 built-in rhythms plus 5 custom web-recorded rhythm slots.
-- Custom rhythms are web-configurable and durably saved.
-- SD logging path: `/log/YYYY-MM-DD/YYYY-MM-DD.log`.
-- Custom rhythm actions are written to SD logs when SD is present.
+```cpp
+v43-web-custom-rhythms-sdlog-compilecheck
+```
 
 ## Files
 
-The source package created locally was:
+- `43_Pulse_CoreS3_WebCustomRhythms_SDLog_CompileCheck.ino` — full Arduino sketch source.
+- `CHANGES_v43.txt` — version notes.
 
-`43_Pulse_CoreS3_WebCustomRhythms_SDLog_CompileCheck.zip`
+## Control model
 
-It contains:
+- G5 = CH1 VAC
+- G6 = CH2 PPM / rhythm pulse
+- G7 = CH3 Motor speed
+- G8 = reserved / hidden from normal UI
 
-- `43_Pulse_CoreS3_WebCustomRhythms_SDLog_CompileCheck.ino`
-- `CHANGES_v43.txt`
+## Features
 
-## Compile note
+- Local-first operation.
+- Setup AP + web portal.
+- No Bluetooth, BLE, or WiFiProv.
+- 20 built-in rhythms.
+- 5 custom rhythm slots recorded/configured from the web portal.
+- Custom rhythm data is saved durably.
+- SD card logging uses `/log/YYYY-MM-DD/YYYY-MM-DD.log`.
 
-A true Arduino/M5Stack compile was not run in the ChatGPT runtime because the M5Stack ESP32 board package/toolchain is not installed there. Static syntax checks with a stubbed Arduino/M5Stack environment passed, and brace/parenthesis/bracket balance was checked.
+## Notes
+
+Use this folder as the latest source of truth unless a newer numbered software folder is added.
