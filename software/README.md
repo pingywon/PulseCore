@@ -27,6 +27,7 @@ This archive contains the numbered CoreS3 software iterations, each in its own f
 - `25_Pulse_CoreS3_Demo/`
 - `26_Pulse_CoreS3_Demo/`
 - `27_Pulse_CoreS3_Demo/`
+- `43_Pulse_CoreS3_WebCustomRhythms_SDLog_CompileCheck/` (owner-supplied source, kept under its original filename; versions 28-42 not archived here)
 
 ## Folder format
 Each version folder contains:
