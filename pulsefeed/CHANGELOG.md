@@ -1,5 +1,21 @@
 # Changelog
 
+## 2.2.1 -- big touch buttons on the dashboard's Rhythms card
+
+### Changed
+- Replaced the Rhythms card's `<select>` dropdown + PLAY SELECTED/STOP
+  PATTERN/speed-slider row with PREV / PLAY-STOP / NEXT buttons sized like
+  the unit's own Program START/STOP button (62px, `.run`), plus a SLOW /
+  SPEED / FAST stepper in place of the range slider. PREV/NEXT and the
+  speed step are direct ports of the unit's B_RHY_PREV/B_RHY_NEXT/
+  B_RHY_SLOW/B_RHY_FAST handlers (pf_ui.cpp) -- same cyclic order, same
+  25%-per-tap speed step, verified identical output across every rhythm id
+  by cross-checking against a transcription of the C++ logic.
+- A compact select + JUMP TO button remains for reaching a distant preset
+  or slot directly (40 entries is a lot of PREV/NEXT taps); it no longer
+  fires on selection change, only on the explicit button press, so
+  scrolling the list can't accidentally change the live pattern.
+
 ## 2.2.0 -- web responsiveness, adjustable rhythms, version drift
 
 ### Fixed

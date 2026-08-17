@@ -206,15 +206,28 @@ border-radius:var(--r);padding:12px 14px;margin-bottom:var(--sp);font-weight:700
     <section class="card span2">
       <h2>Rhythms</h2>
       <p class="sub" style="margin-top:-4px">Patterns drive CH2 only. Vacuum and motor stay
-         under your control while a pattern runs.</p>
-      <select id="rSel" style="margin-top:8px"></select>
-      <p class="sub">Notation <b id="rDots">--</b></p>
-      <label class="sub">Speed <b id="rSpeedV">100</b>%</label>
-      <input id="rSpeed" type="range" min="25" max="400" step="25" value="100">
-      <div class="row" style="margin-top:6px">
-        <button class="b" onclick="setRhythm(0)">STOP PATTERN</button>
-        <button class="b a" onclick="setRhythm(+rSel.value)">PLAY SELECTED</button>
-        <button class="b" onclick="saveFav(1)">SAVE FAV</button>
+         under your control while a pattern runs. PREV/NEXT switch the live pattern
+         immediately, same as the unit's own screen.</p>
+      <div style="margin-top:10px">
+        <div class="big" style="font-size:24px" id="rName">Off</div>
+        <div class="sub">id <b id="rId">0</b> &middot; <b id="rDots">--</b></div>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <button class="b run" style="flex:1 1 64px" onclick="rhythmStep(-1)">&larr; PREV</button>
+        <button class="b p run" id="rToggle" style="flex:3 1 180px" onclick="rhythmToggle()">PLAY</button>
+        <button class="b run" style="flex:1 1 64px" onclick="rhythmStep(1)">NEXT &rarr;</button>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button class="b run" style="flex:1 1 64px" onclick="rhythmSpeedStep(-25)">SLOW</button>
+        <div class="card" style="flex:3 1 180px;display:grid;place-items:center;min-height:62px;padding:0">
+          <div><span class="sub">SPEED</span> <b id="rSpeedV" style="font-size:19px">100</b>%</div>
+        </div>
+        <button class="b run" style="flex:1 1 64px" onclick="rhythmSpeedStep(25)">FAST</button>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <select id="rSel" style="flex:2 1 160px"></select>
+        <button class="b" style="flex:1 1 110px" onclick="setRhythm(+rSel.value)">JUMP TO</button>
+        <button class="b" style="flex:1 1 110px" onclick="saveFav(1)">SAVE FAV</button>
       </div>
     </section>
 
@@ -410,6 +423,36 @@ function push(k,v){
 function setMotor(v){$('motor').value=v;$('motorV').textContent=v;push('motor',v)}
 function setRhythm(id){post('/api/v1/rhythm',{id}).then(poll)}
 function saveFav(n){post('/api/v1/rhythm',{fav:n}).then(()=>toast('Favourite saved'))}
+
+/* PREV/NEXT cycling -- ported directly from the unit's own B_RHY_PREV/
+   B_RHY_NEXT handlers (pf_ui.cpp) so the two controls agree on order:
+   builtins 1..n, then custom slots, wrapping at both ends. Off (0) is
+   not part of the cycle -- PREV from the first builtin or NEXT from the
+   last slot both land back on builtin 1 / n respectively. */
+function rhythmPrev(id){
+  const n=META.rhythms.length, base=META.limits.customBase, slots=ST?ST.slots.length:0;
+  if(id>=base&&id<base+slots) return (id-base===0)?n:id-1;
+  return (id<=1)?n:id-1;
+}
+function rhythmNext(id){
+  const n=META.rhythms.length, base=META.limits.customBase, slots=ST?ST.slots.length:0;
+  if(id===0||id<n) return id+1;
+  if(id===n) return base;
+  if(id>=base&&id<base+slots&&id-base<slots-1) return id+1;
+  return 1;
+}
+function rhythmStep(dir){
+  const id=ST?ST.rhythm:0;
+  setRhythm(dir>0?rhythmNext(id):rhythmPrev(id));
+}
+function rhythmToggle(){
+  const id=ST?ST.rhythm:0;
+  setRhythm(id!==0?0:rhythmNext(0));
+}
+function rhythmSpeedStep(d){
+  const cur=ST?ST.rhythmSpeed:100,lo=META.limits.speedMin,hi=META.limits.speedMax;
+  post('/api/v1/rhythm',{speed:Math.max(lo,Math.min(hi,cur+d))}).then(poll);
+}
 function applyLimit(){push('runLimitMin',+$('runLimitIn').value||0)}
 
 function bindRange(id,key,fmt){
@@ -422,11 +465,6 @@ bindRange('ppm','ppm',v=>{if(v>0&&v<META.limits.ppmMin)v=META.limits.ppmMin;
   $('ppmV').textContent=v;$('ppmBar').style.width=(v/META.limits.ppmMax*100)+'%';drawWave(v)});
 bindRange('ratio','ratio',v=>{$('ratioV').textContent=v;$('ratioInv').textContent=100-v;drawWave()});
 bindRange('motor','motor',v=>{$('motorV').textContent=v;$('motorBar').style.width=v+'%'});
-$('rSpeed').addEventListener('input',()=>{
-  $('rSpeedV').textContent=$('rSpeed').value;
-  post('/api/v1/rhythm',{speed:+$('rSpeed').value});
-});
-$('rSel').addEventListener('change',()=>setRhythm(+$('rSel').value));
 
 /* ---------------- recorder ---------------- */
 function slot(){return +($('cSlot').value||1)}
@@ -544,8 +582,12 @@ function render(s){
   $('motorDuty').textContent=s.out.motorDuty;
   $('softV').textContent=s.motorSoftMs;
 
+  $('rId').textContent=s.rhythm;
+  $('rName').textContent=s.rhythmName||'Off';
   $('rDots').textContent=s.rhythmDots||'--';
-  $('rSpeedV').textContent=s.rhythmSpeed; set('rSpeed',s.rhythmSpeed);
+  $('rSpeedV').textContent=s.rhythmSpeed;
+  $('rToggle').textContent=s.rhythm?'STOP':'PLAY';
+  $('rToggle').className='b run '+(s.rhythm?'d':'p');
 
   $('nSsid').textContent=s.net.ssid;$('nIp').textContent=s.net.ip;
   $('nMode').textContent=s.net.mode;$('nShare').textContent=s.net.share;
