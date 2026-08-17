@@ -1,5 +1,63 @@
 # Changelog
 
+## 2.4.0 -- first real-hardware bug fix; Motor screen crash; PPM Pin Test on the web
+
+First feedback from actual hardware, not the simulator. Owner: crashes on
+touching the Motor or Rhythms screen, the boot mascot isn't needed, and this
+unit should only be dealing with and testing the PPM pin -- get the web
+server solid after boot and put everything needed there.
+
+### Fixed
+- **`screenMotor()` hard fault, confirmed root cause, not a guess.** A
+  ternary picked between two format strings sharing one `int` argument:
+  `vacProportional || motorDuty ? "pwm duty %d/255" : "output %s"`. Whenever
+  the second branch was selected -- motor off, not proportional, the
+  default state -- `%s` tried to dereference `motorDuty` (an int, usually
+  0) as a string pointer. On ESP32 that's a near-guaranteed LoadProhibited
+  exception: address 0 isn't mapped. This fired every time the Motor screen
+  opened with the motor idle, i.e. almost always. The branch's output was
+  always immediately overwritten by the next line anyway when duty was 0,
+  so it was dead code that happened to crash before it could be discarded.
+  Swept the rest of the firmware for the same pattern (conditional between
+  two differently-typed format strings) -- this was the only instance.
+- Couldn't find an equivalent smoking gun for the Rhythms-screen crash
+  despite two full passes: checked every constant this session's 24->30 /
+  8->10 bump touches (all symbolic, no hardcoded array sizes found),
+  verified all 6 Milky sprite structs' declared w/h against their actual
+  PROGMEM array lengths (all correct), read screenRhythm() and its button
+  handlers line by line. None of pf_ui.cpp is exercised by the host tests
+  or the simulator -- this is the first time any of it has run against
+  real hardware. If it recurs, a Serial Monitor backtrace (already at
+  115200 baud) would pin it down in minutes instead of more guessing.
+- `api::begin()` was gated behind `app.settings.webEnabled`, a persisted
+  NVS flag with an on-device toggle. The web dashboard is the primary
+  control surface now, not a convenience alongside the touchscreen -- a
+  stale "off" surviving a reboot with no way back in except a USB cable
+  was no longer acceptable. Boot now forces it true unconditionally before
+  `api::begin()`; the toggle still works live during a session if someone
+  genuinely wants it off.
+
+### Removed
+- The Milky boot animation (slide-in, blink, drink). It cost ~1s of
+  blocking `vTaskDelay` between power-on and the web server coming up.
+  Boot now just shows PULSEFEED + version for 500ms -- still the one place
+  a human glancing at the unit can confirm which build is running, per the
+  2.2.0 kVersion-drift fix. Milky's mood indicator on the Home and Service
+  screens is untouched; only the boot sequence was in scope.
+
+### Added
+- **PPM Pin Test** card on the dashboard: drives CH2 directly through
+  `/api/v1/service`, bypassing the rhythm engine entirely, for verifying
+  wiring and polarity. HOLD TO FIRE is a real press/release control (same
+  pointerdown/pointerup pattern as the tap recorder), plus 200ms/1s one-shot
+  pulses and a DEMO walk through all 30 rhythms. All of the firmware's
+  existing safety envelope applies unchanged: refuses while the program is
+  running, 8s auto-release per hold, 3-minute idle timeout, E-STOP cuts it.
+  Added a matching stub to `sim/pulsefeed-sim.cpp` (state shape + action
+  wiring only, no timers -- those live in pf_service.cpp on the real
+  device) so the new card could actually be verified end to end rather
+  than just read.
+
 ## 2.3.0 -- Rhythms card redesigned as a tap-card grid
 
 ### Changed

@@ -71,6 +71,16 @@ std::string g_recBuf;
 uint64_t    g_recDownMs = 0;
 uint64_t    g_recLastMs = 0;
 
+// Minimal service-mode stub: enough to exercise the web dashboard's
+// PPM Pin Test card (state shape, request wiring, render logic). Does
+// NOT replicate the firmware's safety envelope -- no auto-release timer,
+// no idle timeout, no "refuses while running" guard. That logic lives in
+// pf_service.cpp on the real device, unchanged; only the web UI talking
+// to it is new and needed something to verify against.
+bool        g_svcActive  = false;
+std::string g_svcMode    = "OFF";
+bool        g_svcPulseOn = false;
+
 std::vector<std::string> g_tokens;
 uint64_t g_startWall = 0;
 uint64_t g_reqs = 0;
@@ -307,6 +317,25 @@ std::string stateJson() {
   j.kvStr("version", kVersion);
   j.endObj();
 
+  j.key("service"); j.beginObj();
+  j.kvBool("active", g_svcActive);
+  j.kvStr("mode", g_svcMode.c_str());
+  j.kvStr("status", g_svcActive ? "Simulated -- no real timers" : "");
+  j.kvNum("sweepPct", 0);
+  j.kvNum("sweepMark", -1);
+  j.kvNum("demoId", 1);
+  j.key("channels"); j.beginArr();
+  const char* chNames[] = { "VAC", "PULSE", "MOTOR", "SPARE" };
+  for (int i = 0; i < 4; i++) {
+    j.beginObj();
+    j.kvNum("ch", i);
+    j.kvStr("name", chNames[i]);
+    j.kvBool("on", i == 1 && g_svcPulseOn);
+    j.endObj();
+  }
+  j.endArr();
+  j.endObj();
+
   j.kvStr("status", g_status.c_str());
   j.endObj();
   return std::string(j.c_str());
@@ -473,6 +502,24 @@ void handle(int fd, Req& r) {
       g_status = "Preset copied to slot - now adjustable";
     }
     send(fd, 200, "application/json", okJson());
+    return;
+  }
+
+  if (p == "/api/v1/service") {
+    if (r.method != "POST") { send(fd, 405, "application/json", errJson("post_required")); return; }
+    std::string a = argStr(r, "action");
+    if (a == "exit" || a == "off") {
+      g_svcActive = false; g_svcMode = "OFF"; g_svcPulseOn = false;
+      send(fd, 200, "application/json", okJson()); return;
+    }
+    if (a == "manual") { g_svcActive = true; g_svcMode = "MANUAL"; send(fd, 200, "application/json", okJson()); return; }
+    if (a == "demo")   { g_svcActive = true; g_svcMode = "DEMO";   send(fd, 200, "application/json", okJson()); return; }
+    if (!g_svcActive) { send(fd, 409, "application/json", errJson("service_not_active")); return; }
+    if (a == "hold")    { g_svcPulseOn = true;  send(fd, 200, "application/json", okJson()); return; }
+    if (a == "release") { g_svcPulseOn = false; send(fd, 200, "application/json", okJson()); return; }
+    if (a == "pulse")   { send(fd, 200, "application/json", okJson()); return; }
+    if (a == "demoNext") { send(fd, 200, "application/json", okJson()); return; }
+    send(fd, 400, "application/json", errJson("unknown_action"));
     return;
   }
 

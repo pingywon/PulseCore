@@ -462,10 +462,17 @@ static void screenMotor() {
   label(b, cx, cy - 2, P.text, &fonts::Font4);
   label("% power", cx, cy + 24, P.muted, &fonts::Font0);
 
+  // A ternary used to pick between "pwm duty %d/255" and "output %s" here,
+  // both fed the same lone int argument. Whenever that second branch was
+  // selected -- motor off, not proportional, the default state -- %s
+  // dereferenced o.motorDuty (0) as a string pointer, a hard fault on
+  // real hardware every time this screen opened with the motor idle. The
+  // %s branch's output was always immediately overwritten by the line
+  // below anyway whenever motorDuty was 0, so it was dead code that
+  // happened to crash before it could be discarded.
   Outputs o = app.engine.outputs();
-  snprintf(b, sizeof(b), app.settings.vacProportional || o.motorDuty ? "pwm duty %d/255" : "output %s",
-           o.motorDuty);
-  if (!o.motorDuty) snprintf(b, sizeof(b), "output off");
+  if (o.motorDuty) snprintf(b, sizeof(b), "pwm duty %d/255", o.motorDuty);
+  else             snprintf(b, sizeof(b), "output off");
   label(b, cx, BODY_Y + 88, P.muted, &fonts::Font0);
 
   snprintf(b, sizeof(b), "%d%%", app.settings.motor);
@@ -1030,68 +1037,27 @@ void begin() {
 }
 
 // ------------------------------------------------------------------ //
-//  Boot animation -- the Milky mascot, kept, but tightened up and drawn
-//  through the same canvas so it does not flicker either.
+//  Boot screen -- product + version only. No mascot animation: it cost
+//  ~1s of blocking vTaskDelay between power-on and the web server coming
+//  up, and the owner doesn't need it. kVersion still gets stamped here
+//  unconditionally -- it's the one place a human glancing at the unit
+//  can confirm which build is actually running.
 // ------------------------------------------------------------------ //
-static void milky(int cx, int cy, int eye, int spurt) {
-  uint16_t white = rgb(255, 255, 255);
-  uint16_t rim   = rgb(180, 205, 230);
-  uint16_t blue  = rgb(45, 140, 210);
-
-  cv.fillRoundRect(cx - 28, cy - 42, 56, 82, 13, white);
-  cv.drawRoundRect(cx - 28, cy - 42, 56, 82, 13, rim);
-  cv.fillRoundRect(cx - 17, cy - 63, 34, 26, 8, rgb(235, 245, 255));
-  cv.drawRoundRect(cx - 17, cy - 63, 34, 26, 8, rim);
-  cv.fillRect(cx - 14, cy - 70, 28, 9, blue);
-
-  if (cx > 36 && cx < 284) {
-    cv.fillRoundRect(cx - 23, cy + 4, 46, 21, 6, blue);
-    cv.setFont(&fonts::Font2);
-    cv.setTextDatum(textdatum_t::middle_center);
-    cv.setTextColor(white);
-    cv.drawString("milky", cx, cy + 15);
-  }
-
-  cv.fillCircle(cx - 11, cy - 21, 7, rgb(0, 0, 0));
-  cv.fillCircle(cx + 11, cy - 21, 7, rgb(0, 0, 0));
-  cv.fillCircle(cx - 11 + eye, cy - 21, 3, white);
-  cv.fillCircle(cx + 11 + eye, cy - 21, 3, white);
-
-  if (spurt > 0) {
-    cv.drawLine(cx + 28, cy, cx + 28 + spurt, cy - 3, white);
-    cv.fillCircle(cx + 28 + spurt, cy - 3, 4, white);
-  }
-}
-
 void bootAnimation() {
   if (!g_haveCanvas) return;
   loadPalette();
 
-  for (int x = -60; x <= 160; x += 22) {
-    cv.fillSprite(P.bg);
-    milky(x, 120, 0, 0);
-    cv.pushSprite(0, 0);
-    vTaskDelay(pdMS_TO_TICKS(24));
-  }
-  for (int i = 0; i < 16; i++) {
-    cv.fillSprite(P.bg);
-    milky(160, 120, (i / 4) % 2 ? 4 : -4, 0);
-    cv.setFont(&fonts::Font4);
-    cv.setTextDatum(textdatum_t::middle_center);
-    cv.setTextColor(P.accent2);
-    cv.drawString("PULSEFEED", 160, 200);
-    cv.setFont(&fonts::Font2);
-    cv.setTextColor(P.muted);
-    cv.drawString(kVersion, 160, 224);
-    cv.pushSprite(0, 0);
-    vTaskDelay(pdMS_TO_TICKS(34));
-  }
-  for (int x = 160; x < 400; x += 26) {
-    cv.fillSprite(P.bg);
-    milky(x, 120, 0, x < 260 ? 26 : 0);
-    cv.pushSprite(0, 0);
-    vTaskDelay(pdMS_TO_TICKS(26));
-  }
+  cv.fillSprite(P.bg);
+  cv.setFont(&fonts::Font4);
+  cv.setTextDatum(textdatum_t::middle_center);
+  cv.setTextColor(P.accent2);
+  cv.drawString("PULSEFEED", 160, 108);
+  cv.setFont(&fonts::Font2);
+  cv.setTextColor(P.muted);
+  cv.drawString(kVersion, 160, 140);
+  cv.pushSprite(0, 0);
+  vTaskDelay(pdMS_TO_TICKS(500));
+
   cv.fillSprite(P.bg);
   cv.pushSprite(0, 0);
 }

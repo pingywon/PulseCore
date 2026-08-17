@@ -87,6 +87,13 @@ void setup() {
   Serial.begin(115200);
 
   appBegin();
+  // The web dashboard is the primary control surface now, not a
+  // convenience alongside the touchscreen -- a stale "web off" persisted
+  // from an earlier toggle or a prior firmware must never survive a
+  // reboot, or the only way back in is a USB cable. Boot always brings
+  // the server up; the on-device toggle still works for the current
+  // session if someone genuinely wants it off (pf_ui.cpp, B_NET_WEB).
+  app.settings.webEnabled = true;
   hal::configureOutputs(false, app.settings.vacProportional);
   hal::allOff();
 

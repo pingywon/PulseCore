@@ -281,6 +281,28 @@ border-radius:var(--r);padding:12px 14px;margin-bottom:var(--sp);font-weight:700
       <p class="sub">Slot data <b id="cData">empty</b></p>
     </section>
 
+    <!-- ppm pin test -->
+    <section class="card span2">
+      <h2>PPM Pin Test</h2>
+      <p class="sub" style="margin-top:-4px">Drive CH2 directly, bypassing the rhythm engine
+         entirely &mdash; for verifying wiring and polarity on the pulse output. Refuses to
+         start while the program is running; each hold auto-releases after 8s and the whole
+         mode drops out after 3 minutes idle. E-STOP cuts it exactly like anything else.</p>
+      <div class="row" style="margin-top:8px">
+        <button class="b run" id="svcEnter" style="flex:0 1 240px" onclick="svcToggle()">ENTER TEST MODE</button>
+        <span class="chip" id="svcChip">off</span>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button class="b d run" id="svcHold" style="flex:2 1 160px">HOLD TO FIRE</button>
+        <button class="b run" onclick="svcPulse(200)" style="flex:1 1 120px">PULSE 200ms</button>
+        <button class="b run" onclick="svcPulse(1000)" style="flex:1 1 120px">PULSE 1s</button>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button class="b run" onclick="svcDemo()" style="flex:1 1 200px">DEMO &mdash; WALK ALL RHYTHMS</button>
+      </div>
+      <p class="sub" id="svcStatus">&nbsp;</p>
+    </section>
+
     <!-- network -->
     <section class="card">
       <h2>Network</h2>
@@ -493,6 +515,26 @@ function seedSlot(){return post('/api/v1/custom',
   pad.addEventListener('pointercancel',up);
 })();
 
+/* ---------------- service / ppm pin test ----------------
+   Bypasses the rhythm engine and drives CH2 directly -- for verifying
+   wiring and polarity, not for running a program. hal::CH_PULSE = 1
+   (pf_hal.h: VAC=0, PULSE=1, MOTOR=2, SPARE=3). */
+const CH_PULSE=1;
+function svcToggle(){
+  if(ST&&ST.service&&ST.service.active) return post('/api/v1/service',{action:'exit'}).then(poll);
+  return post('/api/v1/service',{action:'manual'}).then(poll);
+}
+function svcDemo(){return post('/api/v1/service',{action:'demo'}).then(poll)}
+function svcPulse(ms){return post('/api/v1/service',{action:'pulse',ch:CH_PULSE,ms}).then(poll)}
+(function(){
+  const btn=$('svcHold');
+  const dn=e=>{e.preventDefault();post('/api/v1/service',{action:'hold',ch:CH_PULSE})};
+  const up=e=>{e.preventDefault();post('/api/v1/service',{action:'release',ch:CH_PULSE}).then(poll)};
+  btn.addEventListener('pointerdown',dn);
+  btn.addEventListener('pointerup',up);
+  btn.addEventListener('pointercancel',up);
+})();
+
 /* ---------------- network ---------------- */
 async function scan(){
   $('nets').innerHTML='<p class="sub">Scanning&hellip;</p>';
@@ -624,6 +666,18 @@ function render(s){
   $('rDots').textContent=s.rhythmDots||'--';
   $('rSpeedV').textContent=s.rhythmSpeed; set('rSpeed',s.rhythmSpeed);
   updateRhythmGrid(s);
+
+  if(s.service){
+    const svc=s.service;
+    $('svcChip').textContent=svc.active?svc.mode:'off';
+    $('svcChip').className='chip '+(svc.active?'run':'stop');
+    $('svcEnter').textContent=svc.active?('EXIT ('+svc.mode+')'):'ENTER TEST MODE';
+    const pulseCh=(svc.channels||[]).find(c=>c.ch===CH_PULSE);
+    const firing=!!(pulseCh&&pulseCh.on);
+    $('svcHold').textContent=firing?'FIRING — RELEASE TO STOP':'HOLD TO FIRE';
+    $('svcHold').className='b run '+(firing?'d':'w');
+    $('svcStatus').textContent=svc.status||'';
+  }
 
   $('nSsid').textContent=s.net.ssid;$('nIp').textContent=s.net.ip;
   $('nMode').textContent=s.net.mode;$('nShare').textContent=s.net.share;
