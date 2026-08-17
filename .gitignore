@@ -1,0 +1,25 @@
+# Repo-root ignores.
+#
+# These live here, not only in pulsefeed/.gitignore, because a per-subdir
+# .gitignore stops protecting you the moment that subdir is removed on a
+# branch: deleting pulsefeed/ on main took its ignore rules with it, and
+# the next `git add -A` swept in 121 MB of build artifacts that had been
+# correctly ignored right up until that point.
+
+# arduino-cli build output
+**/build/esp32.esp32.*/
+firmware/pulsefeed/build/
+pulsefeed/firmware/pulsefeed/build/
+
+# build output / release archives -- these belong in a GitHub release
+dist/
+pulsefeed/dist/
+
+# host build artifacts
+*.o
+
+# machine-specific LAN landing page
+/index.html
+/pulsefeed/index.html
+
+__pycache__/
