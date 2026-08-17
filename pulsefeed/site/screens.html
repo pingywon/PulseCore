@@ -1,0 +1,548 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>PulseFeed — CoreS3 screen preview</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0b1018;color:#e8eef7;
+  font:15px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  padding:20px 18px 60px}
+.wrap{max-width:1500px;margin:auto}
+h1{font-size:21px;font-weight:800;letter-spacing:.2px}
+.sub{color:#8598ad;font-size:13.5px;margin-top:5px}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;
+  background:#151f2c;border:1px solid #24344a;border-radius:5px;padding:1px 5px}
+
+/* ---------- controls ---------- */
+.bar{position:sticky;top:0;z-index:20;background:rgba(11,16,24,.94);
+  backdrop-filter:blur(8px);border-bottom:1px solid #24344a;
+  margin:16px -18px 0;padding:12px 18px;display:flex;gap:20px;
+  align-items:center;flex-wrap:wrap}
+.grp{display:flex;gap:7px;align-items:center}
+.grp>span{color:#8598ad;font-size:12px;font-weight:700;letter-spacing:.07em;
+  text-transform:uppercase}
+button.c{background:#1b2635;color:#e8eef7;border:1px solid #34485f;
+  border-radius:8px;padding:7px 12px;font:inherit;font-size:13.5px;
+  font-weight:600;cursor:pointer}
+button.c:hover{background:#22314a}
+button.c[aria-pressed="true"]{background:#35c6f4;color:#06121b;border-color:transparent}
+input[type=range]{width:130px}
+
+/* ---------- ruler ---------- */
+.ruler{margin-top:14px;padding:12px 14px;background:#111a25;
+  border:1px solid #24344a;border-radius:10px}
+.rulebar{height:26px;border-left:2px solid #4fe3a8;border-right:2px solid #4fe3a8;
+  border-bottom:2px solid #4fe3a8;position:relative;margin-top:7px}
+.rulebar::after{content:"1 inch";position:absolute;left:50%;top:4px;
+  transform:translateX(-50%);font-size:11px;color:#4fe3a8;font-weight:700}
+
+/* ---------- screen grid ---------- */
+.screens{display:flex;flex-wrap:wrap;gap:26px;margin-top:22px;align-items:flex-start}
+.unit{display:flex;flex-direction:column;gap:7px}
+.cap{font-size:12.5px;font-weight:700}
+.cap em{font-style:normal;color:#8598ad;font-weight:500}
+.note{font-size:11.5px;color:#7d8fa6;max-width:340px}
+.bezel{background:#20262e;border-radius:9px;padding:9px;
+  box-shadow:0 8px 24px #0009;width:max-content}
+.screen{position:relative;overflow:hidden;transform-origin:top left}
+.screen *{position:absolute}
+.px{position:relative;overflow:hidden}
+
+/* ---------- tap-target audit ---------- */
+.audit{margin-top:18px;padding:14px 16px;background:#111a25;
+  border:1px solid #24344a;border-radius:10px}
+.audit h2{font-size:14px;font-weight:800}
+.audit table{border-collapse:collapse;margin-top:9px;font-size:12.5px;width:100%;max-width:760px}
+.audit th{text-align:left;color:#8598ad;font-weight:700;font-size:11px;
+  text-transform:uppercase;letter-spacing:.06em;padding:4px 10px 4px 0}
+.audit td{padding:3px 10px 3px 0;border-top:1px solid #1c2836;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.audit td.w{font-family:inherit;color:#8598ad}
+.bad{color:#ff6b76;font-weight:700}
+.warnc{color:#ffb13d;font-weight:700}
+.okc{color:#4fe3a8;font-weight:700}
+
+/* device elements */
+.t{white-space:pre;line-height:1;transform:translateY(-50%)}
+.t.c{transform:translate(-50%,-50%)}
+.t.r{transform:translate(-100%,-50%)}
+.btn{display:grid;place-items:center;line-height:1;text-align:center;
+  cursor:pointer;user-select:none}
+.btn.pressed{filter:brightness(1.5)}
+body.targets .btn{outline:1.5px dashed rgba(255,120,120,.95);outline-offset:-1.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>CoreS3 screen preview</h1>
+<p class="sub">
+  Every screen the device draws, at the real panel size. Geometry is transcribed
+  from <code>firmware/pulsefeed/pf_ui.cpp</code> — same 320×240, same coordinates,
+  same palette. Tap a button to see its pressed state.
+</p>
+<p class="sub">
+  The M5Stack CoreS3 panel is <b>320×240 on a 2.0&Prime; diagonal</b> — about
+  <b>1.6&Prime; × 1.2&Prime;</b> (40.6 × 30.5 mm), roughly 200 PPI. That is what
+  <b>Actual size</b> shows. It is genuinely small.
+</p>
+
+<div class="bar">
+  <div class="grp"><span>Size</span>
+    <button class="c" data-scale="actual" aria-pressed="true">Actual (2.0&Prime;)</button>
+    <button class="c" data-scale="1" aria-pressed="false">1&times; px</button>
+    <button class="c" data-scale="2" aria-pressed="false">2&times;</button>
+    <button class="c" data-scale="3" aria-pressed="false">3&times;</button>
+  </div>
+  <div class="grp"><span>Theme</span>
+    <button class="c" id="thDark" aria-pressed="true">Dark</button>
+    <button class="c" id="thLight" aria-pressed="false">Light</button>
+  </div>
+  <div class="grp">
+    <button class="c" id="tgt" aria-pressed="false">Outline tap targets</button>
+  </div>
+  <div class="grp"><span>Calibrate</span>
+    <input type="range" id="cal" min="60" max="160" value="100">
+    <span id="calV" style="text-transform:none;letter-spacing:0">100%</span>
+  </div>
+</div>
+
+<div class="ruler">
+  <b style="font-size:13px">Calibration</b>
+  <p class="note" style="max-width:none;margin-top:3px">
+    CSS inches are nominal, so &ldquo;actual size&rdquo; is only as accurate as your
+    display&rsquo;s reported DPI. Hold a real ruler against the bar below and drag
+    <b>Calibrate</b> until it measures exactly one inch — every screen rescales with it.
+    Saved in this browser.
+  </p>
+  <div class="rulebar" id="rulebar"></div>
+</div>
+
+<div class="audit" id="audit"></div>
+
+<div class="screens" id="screens"></div>
+
+</div>
+<script>
+'use strict';
+
+/* ---------- device constants, from pf_config.h / pf_ui.cpp ---------- */
+const W = 320, H = 240;
+const TOPBAR_H = 34, NAV_H = 46, BODY_Y = TOPBAR_H, BODY_H = H - TOPBAR_H - NAV_H, NAV_Y = H - NAV_H;
+const SCREEN_IN_W = 1.6;          // 2.0" diagonal at 4:3
+
+/* Palettes, verbatim from loadPalette(). */
+const PAL = {
+  dark: {bg:'rgb(9,13,20)',panel:'rgb(20,27,38)',panel2:'rgb(30,40,54)',text:'rgb(232,238,247)',
+    muted:'rgb(125,143,166)',accent:'rgb(53,198,244)',accent2:'rgb(79,227,168)',warn:'rgb(255,177,61)',
+    danger:'rgb(255,77,90)',good:'rgb(79,227,168)',grid:'rgb(42,54,70)',shadow:'rgb(5,8,12)',
+    onAccent:'rgb(6,12,18)'},
+  light:{bg:'rgb(238,242,247)',panel:'rgb(255,255,255)',panel2:'rgb(226,233,242)',text:'rgb(17,25,38)',
+    muted:'rgb(96,112,133)',accent:'rgb(0,132,186)',accent2:'rgb(0,154,108)',warn:'rgb(199,118,0)',
+    danger:'rgb(214,40,52)',good:'rgb(0,154,108)',grid:'rgb(197,208,221)',shadow:'rgb(180,191,205)',
+    onAccent:'rgb(255,255,255)'}
+};
+let P = PAL.dark;
+
+/* LovyanGFX font heights, approximated for the browser. */
+const F = {0:8, 2:16, 4:26};
+
+/* styleFill()/styleText() from pf_ui.cpp. */
+const styleFill = s => ({1:P.accent,2:P.good,3:P.warn,4:P.danger,5:P.panel})[s] || P.panel2;
+const styleText = s => (s===1||s===2||s===3) ? P.onAccent : (s===4 ? 'rgb(255,255,255)' : P.text);
+
+/* ---------- draw ops -> DOM ---------- */
+const el = (cls, style, txt) => {
+  const d = document.createElement('div');
+  if (cls) d.className = cls;
+  d.style.cssText = style;
+  if (txt !== undefined) d.textContent = txt;
+  return d;
+};
+function rect(o,x,y,w,h,fill,r){ o.push(el('', `left:${x}px;top:${y}px;width:${w}px;height:${h}px;background:${fill};border-radius:${r||0}px`)); }
+function card(o,x,y,w,h,fill){ rect(o,x,y+1,w,h,P.shadow,10); rect(o,x,y,w,h,fill,10); }
+function hline(o,x,y,w,c){ rect(o,x,y,w,1,c); }
+function circle(o,cx,cy,r,fill){ rect(o,cx-r,cy-r,r*2,r*2,fill,r); }
+function text(o,x,y,s,col,f,align){
+  const a = align||'c';
+  o.push(el('t '+(a==='l'?'':a), `left:${x}px;top:${y}px;color:${col};font-size:${F[f]}px;`+
+    `font-weight:${f===0?600:700};letter-spacing:${f===0?'.2px':'0'}`, s));
+}
+function bar(o,x,y,w,h,frac,col){
+  rect(o,x,y,w,h,P.panel2,h/2);
+  const fw = Math.round(w*Math.max(0,Math.min(1,frac)));
+  if (fw>2) rect(o,x,y,fw,h,col,h/2);
+}
+function gauge(o,cx,cy,radius,frac,on,off){
+  const N=34, start=140, sweep=260, lit=Math.round(frac*N);
+  for(let i=0;i<N;i++){
+    const a=(start+sweep*i/(N-1))*Math.PI/180;
+    const x=cx+Math.cos(a)*radius, y=cy+Math.sin(a)*radius;
+    const r=(i<lit)?3:2;
+    circle(o,x,y,r,(i<lit)?on:off);
+  }
+}
+function btn(o,x,y,w,h,label,style){
+  const fill=styleFill(style), fs=(h>=44)?F[4]:F[2];
+  o.push(el('', `left:${x}px;top:${y+1}px;width:${w}px;height:${h}px;background:${P.shadow};border-radius:10px`));
+  const b = el('btn', `left:${x}px;top:${y}px;width:${w}px;height:${h}px;background:${fill};`+
+    `border-radius:10px;color:${styleText(style)};font-size:${fs}px;font-weight:700;`+
+    (style===0||style===5 ? `box-shadow:inset 0 0 0 1px ${P.grid};` : ''), label);
+  b.addEventListener('pointerdown',e=>{e.preventDefault();b.classList.add('pressed')});
+  const up=()=>b.classList.remove('pressed');
+  b.addEventListener('pointerup',up); b.addEventListener('pointercancel',up);
+  b.addEventListener('pointerleave',up);
+  o.push(b);
+}
+
+/* ---------- chrome ---------- */
+function topBar(o,title,showBack,bars){
+  rect(o,0,0,W,TOPBAR_H,P.panel);
+  hline(o,0,TOPBAR_H-1,W,P.grid);
+  let tx=12;
+  if(showBack){ btn(o,4,4,34,26,'<',0); tx=46; }
+  text(o,tx,TOPBAR_H/2-1,title,P.text,2,'l');
+  // wifiGlyph(200, 9): four ascending bars
+  const n = bars===undefined?3:bars;
+  for(let i=0;i<4;i++) rect(o,200+i*5,9+(12-(i+1)*3),3,(i+1)*3,i<n?P.accent:P.grid);
+  btn(o,240,3,76,28,'E-STOP',4);
+}
+function navBar(o,sel){
+  rect(o,0,NAV_Y,W,NAV_H,P.panel);
+  hline(o,0,NAV_Y,W,P.grid);
+  const tabs=['HOME','VAC','PULSE','MOTOR','RHYTM'], tw=W/5;
+  tabs.forEach((t,i)=>{
+    const x=i*tw, on=(i===sel);
+    if(on){ rect(o,x+4,NAV_Y+3,tw-8,NAV_H-6,P.panel2); rect(o,x+4,NAV_Y+3,tw-8,3,P.accent); }
+    text(o,x+tw/2,NAV_Y+NAV_H/2,t,on?P.accent:P.muted,2,'c');
+  });
+}
+function stepper(o,y,h,name,value,col){
+  btn(o,8,y,62,h,'-',0);
+  btn(o,W-70,y,62,h,'+',0);
+  card(o,76,y,W-152,h,P.panel);
+  text(o,W/2,y+12,name,P.muted,0,'c');
+  text(o,W/2,y+h/2+6,value,col,4,'c');
+}
+function milky(o,x,y,w,h){
+  // Mood sprite slot -- real art is RGB565 in pf_milky.h; boxed here.
+  rect(o,x,y,w,h,P.panel2,6);
+  text(o,x+w/2,y+h/2,'milky',P.muted,0,'c');
+}
+
+/* ---------- screens ---------- */
+const SCREENS = [
+{ id:'SCR_HOME', name:'Home', note:'Three live channel strips, the primary START/STOP, and the four secondary destinations.',
+  draw(o){
+    topBar(o,'Pluto 9000',false);
+    const rows=[['VACUUM','62','%',P.accent2,false],['PULSE','120','',P.accent,true],['MOTOR','45','%',P.warn,false]];
+    rows.forEach((r,i)=>{
+      const y=BODY_Y+4+i*30;
+      card(o,8,y,W-16,27,P.panel);
+      text(o,16,y+13,r[0],P.muted,0,'l');
+      text(o,W-46,y+14,r[1]+r[2],P.text,2,'r');
+      bar(o,74,y+10,150,8,[0.62,0.3,0.45][i],r[3]);
+      if(r[4]) circle(o,W-22,y+13,6,P.accent);
+    });
+    btn(o,8,BODY_Y+96,150,56,'START',2);
+    btn(o,166,BODY_Y+96,146,26,'GRAPHS',0);
+    btn(o,166,BODY_Y+126,46,26,'NET',0);
+    btn(o,216,BODY_Y+126,46,26,'SET',0);
+    btn(o,266,BODY_Y+126,46,26,'TEST',1);
+    milky(o,120,BODY_Y+94,36,48);
+    navBar(o,0);
+  }},
+{ id:'SCR_VAC', name:'Vacuum · CH1', note:'Ring gauge is the modelled actual; the stepper sets target. Response ± is the small pair on the right.',
+  draw(o){
+    topBar(o,'Vacuum  CH1',true);
+    gauge(o,74,BODY_Y+46,38,0.62,P.accent2,P.grid);
+    text(o,74,BODY_Y+46,'62',P.text,4,'c');
+    text(o,74,BODY_Y+70,'actual %',P.muted,0,'c');
+    card(o,126,BODY_Y+6,W-134,80,P.panel);
+    text(o,138,BODY_Y+20,'TARGET',P.muted,0,'l');
+    text(o,138,BODY_Y+46,'65%',P.accent2,4,'l');
+    text(o,138,BODY_Y+72,'response 5/10',P.muted,0,'l');
+    btn(o,W-76,BODY_Y+60,30,22,'-',5);
+    btn(o,W-42,BODY_Y+60,30,22,'+',5);
+    stepper(o,BODY_Y+94,60,'VACUUM TARGET','65%',P.accent2);
+    navBar(o,1);
+  }},
+{ id:'SCR_PULSE', name:'Pulsation · CH2', note:'Live square wave drawn from PPM + ratio. Two steppers: rate, then on:off ratio.',
+  draw(o){
+    topBar(o,'Pulsation  CH2',true);
+    const gx=8,gy=BODY_Y+4,gw=W-16,gh=40;
+    card(o,gx,gy,gw,gh,P.panel);
+    // square wave: 120 PPM over a 3 s window, 50% ratio
+    const ppm=120, periodMs=60000/ppm, win=3000, inner=gw-8;
+    let prev=null;
+    for(let px=0;px<inner;px++){
+      const t=px/inner*win, ph=(t%periodMs)/periodMs, on=ph<0.5;
+      const y=on?gy+7:gy+gh-7;
+      if(prev!==null&&prev!==y) rect(o,gx+4+px,Math.min(prev,y),1,Math.abs(prev-y),P.accent);
+      rect(o,gx+4+px,y,1,1,P.accent);
+      prev=y;
+    }
+    circle(o,gx+gw-16,gy+12,4,P.grid);
+    stepper(o,BODY_Y+48,54,'PULSES PER MINUTE','120',P.accent);
+    stepper(o,BODY_Y+106,50,'RATIO  (on:off)','50:50',P.accent2);
+    navBar(o,2);
+  }},
+{ id:'SCR_MOTOR', name:'Motor · CH3', note:'The screen that hard-faulted before 2.4.0 — a format string dereferenced an int as a char*. Fixed.',
+  draw(o){
+    topBar(o,'Motor  CH3',true);
+    const cx=W/2, cy=BODY_Y+46;
+    gauge(o,cx,cy,42,0.45,P.warn,P.grid);
+    text(o,cx,cy-2,'45',P.text,4,'c');
+    text(o,cx,cy+24,'% power',P.muted,0,'c');
+    text(o,cx,BODY_Y+88,'output off',P.muted,0,'c');
+    stepper(o,BODY_Y+98,56,'MOTOR POWER','45%',P.warn);
+    navBar(o,3);
+  }},
+{ id:'SCR_RHYTHM', name:'Rhythms · CH2', note:'PREV / PLAY-STOP / NEXT over SLOW / SPEED / FAST. 40 selectable ids reachable only by stepping.',
+  draw(o){
+    topBar(o,'Rhythms  CH2',true);
+    card(o,8,BODY_Y+4,W-16,56,P.panel);
+    circle(o,38,BODY_Y+32,8,P.grid);
+    o.push(el('',`left:${38-17}px;top:${BODY_Y+32-17}px;width:34px;height:34px;border-radius:17px;box-shadow:inset 0 0 0 1px ${P.grid}`));
+    text(o,68,BODY_Y+18,'Heartbeat',P.text,2,'l');
+    text(o,68,BODY_Y+36,'. . - . . -',P.warn,0,'l');
+    text(o,68,BODY_Y+50,'id 3  -  speed 100%  -  CH2 only',P.muted,0,'l');
+    btn(o,8,BODY_Y+66,62,40,'PREV',0);
+    btn(o,76,BODY_Y+66,168,40,'PLAY RHYTHM',2);
+    btn(o,W-70,BODY_Y+66,62,40,'NEXT',0);
+    btn(o,8,BODY_Y+112,62,40,'SLOW',0);
+    card(o,76,BODY_Y+112,W-152,40,P.panel);
+    text(o,W/2-30,BODY_Y+132,'SPEED',P.muted,0,'c');
+    text(o,W/2+24,BODY_Y+132,'100%',P.text,2,'c');
+    btn(o,W-70,BODY_Y+112,62,40,'FAST',0);
+    navBar(o,4);
+  }},
+{ id:'SCR_GRAPH', name:'Live graphs', note:'118-sample rolling history for vacuum, PPM and motor.',
+  draw(o){
+    topBar(o,'Live graphs',true);
+    const gx=8,gy=BODY_Y+4,gw=W-16,gh=BODY_H-12;
+    card(o,gx,gy,gw,gh,P.panel);
+    for(let i=1;i<4;i++) hline(o,gx+4,gy+gh*i/4,gw-8,P.grid);
+    [[P.accent2,0.35],[P.accent,0.55],[P.warn,0.2]].forEach(([c,base])=>{
+      for(let px=0;px<gw-8;px++){
+        const v=base+0.12*Math.sin(px/9+base*10);
+        rect(o,gx+4+px,gy+gh-4-v*(gh-10),1,2,c);
+      }
+    });
+    navBar(o,-1);
+  }},
+{ id:'SCR_NET', name:'Network', note:'The only place the setup-AP key and web PIN are ever shown.',
+  draw(o){
+    topBar(o,'Network',true);
+    card(o,8,BODY_Y+4,W-16,84,P.panel);
+    text(o,18,BODY_Y+16,'NETWORK',P.muted,0,'l');
+    text(o,18,BODY_Y+34,'barn-wifi',P.accent2,2,'l');
+    text(o,18,BODY_Y+56,'192.168.1.42',P.accent,2,'l');
+    text(o,18,BODY_Y+76,'LAN + setup AP',P.muted,0,'l');
+    card(o,8,BODY_Y+92,W-16,32,P.panel2);
+    text(o,W/2,BODY_Y+108,'AP Pluto9000-3F2A1B  key K7QW2NDH  PIN 246813',P.text,0,'c');
+    btn(o,8,BODY_Y+128,148,28,'SETUP AP',0);
+    btn(o,164,BODY_Y+128,148,28,'WEB: ON',2);
+    navBar(o,-1);
+  }},
+{ id:'SCR_SETTINGS', name:'Settings', note:'Four rows, each a label plus its control on the right.',
+  draw(o){
+    topBar(o,'Settings',true);
+    card(o,8,BODY_Y+4,W-16,34,P.panel);
+    text(o,18,BODY_Y+21,'Theme',P.text,2,'l');
+    btn(o,W-108,BODY_Y+8,96,26,'DARK',0);
+    card(o,8,BODY_Y+42,W-16,34,P.panel);
+    text(o,18,BODY_Y+59,'Backlight  8/10',P.text,2,'l');
+    btn(o,W-108,BODY_Y+46,44,26,'-',0);
+    btn(o,W-58,BODY_Y+46,44,26,'+',0);
+    card(o,8,BODY_Y+80,W-16,34,P.panel);
+    text(o,18,BODY_Y+97,'Run limit  60 min',P.text,2,'l');
+    btn(o,W-108,BODY_Y+84,44,26,'-',0);
+    btn(o,W-58,BODY_Y+84,44,26,'+',0);
+    card(o,8,BODY_Y+118,W-16,34,P.panel);
+    text(o,18,BODY_Y+135,'Web PIN required',P.text,2,'l');
+    btn(o,W-108,BODY_Y+122,96,26,'ON',2);
+    navBar(o,-1);
+  }},
+{ id:'SCR_RECORD', name:'Record rhythm', note:'Tap recorder. The big pad is press-and-hold; hold length becomes the pulse length.',
+  draw(o){
+    topBar(o,'Record rhythm',true);
+    card(o,8,BODY_Y+4,W-16,46,P.panel);
+    text(o,18,BODY_Y+20,'Slot 1  -  Custom 1',P.text,2,'l');
+    text(o,18,BODY_Y+38,'(empty)',P.muted,0,'l');
+    btn(o,W-66,BODY_Y+10,56,32,'SLOT',0);
+    btn(o,8,BODY_Y+56,96,32,'ARM',0);
+    btn(o,110,BODY_Y+56,96,32,'SAVE',2);
+    btn(o,212,BODY_Y+56,100,32,'CLEAR',0);
+    btn(o,8,BODY_Y+94,W-16,60,'ARM FIRST',5);
+    navBar(o,-1);
+  }},
+{ id:'SCR_SERVICE', name:'Service / Test — MANUAL', note:'One button per physical channel, including the spare. This is the polarity check before a load is connected.',
+  draw(o){
+    topBar(o,'Service / Test',true);
+    btn(o,8,BODY_Y+4,98,30,'MANUAL',1);
+    btn(o,111,BODY_Y+4,98,30,'PUMP',0);
+    btn(o,214,BODY_Y+4,98,30,'DEMO',0);
+    ['CH1 off','CH2 ON','CH3 off','CH4 off'].forEach((l,i)=>{
+      const y=BODY_Y+40+Math.floor(i/2)*34, x=8+(i%2)*154;
+      btn(o,x,y,150,30,l,l.includes('ON')?4:0);
+    });
+    text(o,W/2,BODY_Y+118,'Hold to fire. Auto-releases after 8 s.',P.muted,0,'c');
+    text(o,W/2,NAV_Y-10,'MANUAL - CH2 held',P.muted,0,'c');
+    btn(o,W-104,NAV_Y-34,96,26,'EXIT',3);
+    navBar(o,-1);
+  }},
+{ id:'SCR_SERVICE', name:'Service / Test — PUMP', note:'Ramps the pump while you listen, to find the squeal floor on your own hardware.',
+  draw(o){
+    topBar(o,'Service / Test',true);
+    btn(o,8,BODY_Y+4,98,30,'MANUAL',0);
+    btn(o,111,BODY_Y+4,98,30,'PUMP',1);
+    btn(o,214,BODY_Y+4,98,30,'DEMO',0);
+    card(o,8,BODY_Y+40,W-16,46,P.panel);
+    text(o,18,BODY_Y+54,'PUMP DUTY',P.muted,0,'l');
+    text(o,18,BODY_Y+72,'78%',P.warn,4,'l');
+    bar(o,96,BODY_Y+66,W-112,10,0.78,P.warn);
+    text(o,W-20,BODY_Y+52,'marked 75%',P.good,0,'r');
+    btn(o,8,BODY_Y+92,150,32,'START SWEEP',2);
+    btn(o,162,BODY_Y+92,150,32,'MARK CLEAN',1);
+    text(o,W/2,NAV_Y-10,'SWEEP - 78%',P.muted,0,'c');
+    btn(o,W-104,NAV_Y-34,96,26,'EXIT',3);
+    navBar(o,-1);
+  }},
+{ id:'SCR_SERVICE', name:'Service / Test — DEMO', note:'Walks all 30 built-in rhythms on CH2 only. No load required.',
+  draw(o){
+    topBar(o,'Service / Test',true);
+    btn(o,8,BODY_Y+4,98,30,'MANUAL',0);
+    btn(o,111,BODY_Y+4,98,30,'PUMP',0);
+    btn(o,214,BODY_Y+4,98,30,'DEMO',1);
+    card(o,8,BODY_Y+40,196,84,P.panel);
+    text(o,18,BODY_Y+54,'3 / 30',P.muted,0,'l');
+    text(o,18,BODY_Y+74,'Heartbeat',P.text,2,'l');
+    text(o,18,BODY_Y+96,'. . - . . -',P.warn,0,'l');
+    circle(o,180,BODY_Y+74,10,P.accent);
+    milky(o,214,BODY_Y+34,72,96);
+    btn(o,8,BODY_Y+128,196,26,'NEXT PATTERN',0);
+    text(o,W/2,NAV_Y-10,'DEMO - 3/30 Heartbeat',P.muted,0,'c');
+    btn(o,W-104,NAV_Y-34,96,26,'EXIT',3);
+    navBar(o,-1);
+  }},
+{ id:'SCR_ESTOP_CONFIRM', name:'E-STOP — confirm', note:'Full-bleed danger fill. No nav bar: the only ways out are the two buttons.',
+  draw(o){
+    rect(o,0,0,W,H,P.danger);
+    text(o,W/2,44,'OUTPUTS OFF','rgb(255,255,255)',4,'c');
+    text(o,W/2,82,'All three channels are de-energised.','rgb(255,235,235)',2,'c');
+    text(o,W/2,106,'Release residual pressure?','rgb(255,235,235)',2,'c');
+    btn(o,12,130,296,50,'RELEASE PRESSURE',5);
+    btn(o,12,188,296,42,'BACK (stay latched)',0);
+  }},
+{ id:'SCR_ESTOP_ACTIVE', name:'E-STOP — released', note:'Stays latched until explicitly cleared here.',
+  draw(o){
+    rect(o,0,0,W,H,P.danger);
+    text(o,W/2,52,'RELEASED','rgb(255,255,255)',4,'c');
+    text(o,W/2,92,'Positive and negative pressure off.','rgb(255,235,235)',2,'c');
+    text(o,W/2,116,'E-STOP stays latched until you return.','rgb(255,235,235)',2,'c');
+    btn(o,12,150,296,60,'CLEAR E-STOP AND RETURN',5);
+  }}
+];
+
+/* ---------- render ---------- */
+let scaleMode='actual', cal=+(localStorage.getItem('pf_cal')||100);
+
+function scaleFactor(){
+  if(scaleMode==='actual') return (SCREEN_IN_W*96*(cal/100))/W;
+  return +scaleMode;
+}
+function render(){
+  const s=scaleFactor();
+  const host=document.getElementById('screens');
+  host.innerHTML='';
+  SCREENS.forEach(sc=>{
+    const ops=[]; sc.draw(ops);
+    const inner=el('screen',`width:${W}px;height:${H}px;background:${P.bg};transform:scale(${s})`);
+    ops.forEach(n=>inner.appendChild(n));
+    const px=el('px',`width:${Math.round(W*s)}px;height:${Math.round(H*s)}px`);
+    px.appendChild(inner);
+    const bez=el('bezel',''); bez.appendChild(px);
+    const unit=el('unit','');
+    const cap=el('cap','',''); cap.innerHTML=`${sc.name} <em>${sc.id}</em>`;
+    unit.append(cap,bez,el('note','',sc.note));
+    host.appendChild(unit);
+  });
+  document.getElementById('rulebar').style.width=(96*(cal/100))+'px';
+  document.getElementById('calV').textContent=cal+'%';
+  audit();
+}
+
+/* Physical size of every distinct tap target. Independent of the zoom
+   control -- these are the real millimetres on a 2.0" panel. */
+const MM_PER_PX = (SCREEN_IN_W*25.4)/W;      // 0.127 mm
+function audit(){
+  const seen=new Map();
+  document.querySelectorAll('#screens .unit').forEach(u=>{
+    const where=u.querySelector('.cap').textContent.replace(/SCR_\w+/,'').trim();
+    u.querySelectorAll('.screen .btn').forEach(b=>{
+      const bw=parseFloat(b.style.width), bh=parseFloat(b.style.height);
+      const k=bw+'x'+bh;
+      if(!seen.has(k)) seen.set(k,{w:bw,h:bh,labels:new Set(),where:new Set()});
+      seen.get(k).labels.add(b.textContent||'(nav)');
+      seen.get(k).where.add(where);
+    });
+  });
+  const rows=[...seen.values()].map(r=>{
+    r.mmW=r.w*MM_PER_PX; r.mmH=r.h*MM_PER_PX; r.min=Math.min(r.mmW,r.mmH); return r;
+  }).sort((a,b)=>a.min-b.min || a.mmW-b.mmW);
+
+  const cls=m=>m<6?'bad':(m<9?'warnc':'okc');
+  const worst=rows[0], best=rows[rows.length-1];
+  const host=document.getElementById('audit');
+  host.innerHTML =
+    '<h2>Tap target sizes on the real panel</h2>'+
+    '<p class="note" style="max-width:none;margin-top:4px">'+
+    'Computed from the same geometry the screens above are drawn from, converted to '+
+    'millimetres at the true 2.0&Prime; panel size. Rule of thumb: <b>~9&nbsp;mm</b> is the '+
+    'usual minimum for a <i>bare</i> fingertip, and a gloved hand needs more. '+
+    'Nothing on this device reaches that in both dimensions &mdash; the tallest control '+
+    'anywhere is <b>'+best.mmH.toFixed(1)+'&nbsp;mm</b>, and the smallest is '+
+    '<b>'+worst.mmW.toFixed(1)+'&nbsp;&times;&nbsp;'+worst.mmH.toFixed(1)+'&nbsp;mm</b>. '+
+    'That is the case for driving this thing from the web dashboard on a tablet rather '+
+    'than from the panel.</p>'+
+    '<table><thead><tr><th>Device px</th><th>Millimetres</th><th>Min</th><th>Controls</th></tr></thead><tbody>'+
+    rows.map(r=>'<tr>'+
+      '<td>'+r.w+'&times;'+r.h+'</td>'+
+      '<td>'+r.mmW.toFixed(1)+' &times; '+r.mmH.toFixed(1)+'</td>'+
+      '<td class="'+cls(r.min)+'">'+r.min.toFixed(1)+' mm</td>'+
+      '<td class="w">'+[...r.labels].slice(0,4).join(', ')+'</td>'+
+    '</tr>').join('')+
+    '</tbody></table>';
+}
+
+document.querySelectorAll('[data-scale]').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('[data-scale]').forEach(x=>x.setAttribute('aria-pressed','false'));
+    b.setAttribute('aria-pressed','true');
+    scaleMode=b.dataset.scale; render();
+  });
+});
+function setTheme(dark){
+  P = dark?PAL.dark:PAL.light;
+  document.getElementById('thDark').setAttribute('aria-pressed',String(dark));
+  document.getElementById('thLight').setAttribute('aria-pressed',String(!dark));
+  render();
+}
+document.getElementById('thDark').addEventListener('click',()=>setTheme(true));
+document.getElementById('thLight').addEventListener('click',()=>setTheme(false));
+document.getElementById('tgt').addEventListener('click',e=>{
+  const on=document.body.classList.toggle('targets');
+  e.currentTarget.setAttribute('aria-pressed',String(on));
+});
+const calEl=document.getElementById('cal');
+calEl.value=cal;
+calEl.addEventListener('input',()=>{ cal=+calEl.value; localStorage.setItem('pf_cal',cal); render(); });
+
+render();
+</script>
+</body>
+</html>
