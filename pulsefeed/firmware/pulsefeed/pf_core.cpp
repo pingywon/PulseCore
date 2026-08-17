@@ -237,6 +237,18 @@ bool RhythmPattern::compileCsv(const char* csv) {
   return valid();
 }
 
+size_t RhythmPattern::toCsv(char* out, size_t cap) const {
+  size_t len = 0;
+  out[0] = '\0';
+  for (int i = 0; i < count_ && len + 1 < cap; i++) {
+    int n = snprintf(out + len, cap - len, "%u,%u;", steps_[i].onMs, steps_[i].offMs);
+    if (n < 0 || (size_t)n >= cap - len) break;   // would truncate a pair mid-number; stop clean
+    len += (size_t)n;
+  }
+  out[len] = '\0';
+  return len;
+}
+
 // Scaled clock. speedPct > 100 plays faster (matches v43's direction).
 // All arithmetic is 64-bit: v43 computed `elapsed * speedPct` in 32 bits
 // and wrapped after roughly four hours at 300%, which made a running

@@ -1,5 +1,48 @@
 # Changelog
 
+## 2.2.0 -- web responsiveness, adjustable rhythms, version drift
+
+### Fixed
+- **The dashboard's request pattern, not the device, was the lag.** CH2
+  timing already runs in a dedicated 1 kHz task nothing in the UI or
+  network path can preempt -- physical behaviour was never the problem.
+  The web page polled `/api/v1/state` on a plain `setInterval(poll,1000)`
+  with no guard against overlap, and the ESP32's WebServer handles
+  exactly one TCP connection at a time by design (confirmed against the
+  vendored library source, not assumed). When a round trip ran long the
+  next tick fired anyway, so requests backed up and were served late, in
+  whatever order they happened to queue in -- including E-STOP, which had
+  no priority over a stale poll sitting in the same line.
+  `web/src/index.html` now sends everything through one FIFO with exactly
+  one request on the wire, chains each poll off the previous one's
+  completion instead of a fixed interval, times out a wedged request
+  after 4 s instead of hanging on it, and gives E-STOP a dedicated path
+  that clears the line and aborts whatever's in flight before firing.
+- `kVersion` had been hardcoded to `"2.0.0"` since before the 2.1.0 cycle
+  started -- the boot screen, the web dashboard's System card and the API
+  all reported a build that hadn't been true for two releases.
+  `tools/sync_version.py` now stamps it from `VERSION` before every build
+  (`tools/build.sh` runs it unconditionally, first), so this can't drift
+  again. The existing boot-screen Milky animation already displayed
+  whatever `kVersion` held; it was just wrong.
+
+### Added
+- 6 more built-in rhythms (24 -> 30): Fast Flutter, Slow Drip, Uneven,
+  Pyramid, Micro Burst, Long Hold.
+- Custom slots 8 -> 10.
+- Built-in rhythms are no longer fixed forever: `POST /api/v1/custom
+  action=seed&slot=N&from=<builtin id>` copies a preset's compiled timing
+  into a slot as an editable tap-recorder pattern (`RhythmPattern::toCsv`,
+  the inverse of the existing `compileCsv`), so it can be renamed,
+  re-tapped over, or just played at a different Speed like any
+  tap-recorded slot. Wired into the dashboard's renamed "Custom slots —
+  adjustable" card as a preset picker + COPY TO SLOT button.
+
+### Changed
+- `hState`'s JSON scratch buffer 3072 B -> 6144 B. 10 slots at up to 320 B
+  of raw pattern data each already exceeds the old buffer before the rest
+  of the state object is counted; it was sitting at the edge even at 8.
+
 ## Unreleased -- consolidated into the PulseCore repo
 
 No firmware behaviour change. Repository and build-tooling only.

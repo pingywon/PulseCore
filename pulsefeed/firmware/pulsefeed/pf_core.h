@@ -25,7 +25,7 @@ namespace pf {
 // ------------------------------------------------------------------ //
 //  Identity
 // ------------------------------------------------------------------ //
-static const char* const kVersion   = "2.0.0";
+static const char* const kVersion   = "2.2.0";
 static const char* const kProduct   = "PulseFeed";
 static const char* const kModel     = "Pluto 9000";
 static const char* const kApiLevel  = "1";
@@ -72,7 +72,7 @@ struct Limits {
   static const int kRunLimitMin   = 0;
   static const int kRunLimitMax   = 480;
 
-  static const int kRhythmSlots   = 8;     // v43 had 5
+  static const int kRhythmSlots   = 10;    // v43 had 5
   static const int kRhythmNameLen = 24;
   static const int kRhythmDataLen = 320;
   static const int kMaxSteps      = 48;    // compiled steps per pattern
@@ -80,7 +80,7 @@ struct Limits {
 
 // Built-in rhythm ids are 1..kBuiltinCount. 0 is "off".
 // Custom slots occupy kCustomBase .. kCustomBase+kRhythmSlots-1.
-static const int kBuiltinCount = 24;
+static const int kBuiltinCount = 30;
 static const int kCustomBase   = 32;      // gap left so builtins can grow
 static const int kRhythmIdMax  = kCustomBase + Limits::kRhythmSlots - 1;
 
@@ -168,6 +168,12 @@ class RhythmPattern {
 
   // "120,300;80,150;"  -> explicit onMs,offMs pairs (tap-recorded).
   bool compileCsv(const char* csv);
+
+  // Inverse of compileCsv: serialises the compiled steps back to that
+  // same format, so a built-in dot/dash preset can be copied into a
+  // custom slot and adjusted with the tap-recorder's own tools (rename,
+  // re-tap, speed, save) instead of needing a second editor.
+  size_t toCsv(char* out, size_t cap) const;
 
   bool     valid()   const { return count_ > 0 && totalMs_ > 0; }
   uint8_t  count()   const { return count_; }

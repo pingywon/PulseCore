@@ -31,7 +31,11 @@ Session g_sessions[PF_MAX_SESSIONS];
 int      g_authFails = 0;
 uint32_t g_lockedUntil = 0;
 
-char g_json[3072];
+// hState serialises every custom slot's raw data string (up to
+// Limits::kRhythmDataLen = 320 B each) plus name, net and sys sections.
+// At 10 slots the worst case (all slots holding long tap-recorded
+// patterns) tops 4 KB; 3072 sat right at the edge even at 8 slots.
+char g_json[6144];
 
 // ------------------------------------------------------------------ //
 void randomToken(char* out, size_t len) {
@@ -386,6 +390,7 @@ void hCustom() {
   else if (a == "clear") cmdRecordClear(slot, "web");
   else if (a == "play")  cmdSetRhythm(kCustomBase + slot, "web");
   else if (a == "rename") saveSettingsNow("web");
+  else if (a == "seed")  { if (!cmdSeedSlot(slot, argInt("from", 0), "web")) { sendErr(400, "bad_source"); return; } }
   else if (a != "") { sendErr(400, "unknown_action"); return; }
 
   ui::invalidate();

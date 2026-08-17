@@ -26,6 +26,12 @@ c_grn() { printf '\033[32m%s\033[0m\n' "$*"; }
 c_red() { printf '\033[31m%s\033[0m\n' "$*"; }
 hdr()   { printf '\n\033[1m== %s ==\033[0m\n' "$*"; }
 
+# Every target below compiles or ships firmware::kVersion in some form
+# (host tests, sim, the .ino itself), so keep it in sync with VERSION
+# before any of them run rather than in just one path.
+hdr "version"
+python3 tools/sync_version.py
+
 do_test() {
   hdr "host tests"
   g++ $CXXFLAGS -o dist/pf_test tests/test_core.cpp $CORE

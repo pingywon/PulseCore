@@ -42,7 +42,9 @@ and emits the web-sized WebP set plus the device sprite header.
 - No Bluetooth, BLE, or WiFiProv.
 - Local-first boot: touchscreen control works without waiting for WiFi.
 - Setup AP + web portal for WiFi and control.
-- 20 built-in rhythms plus 5 web-recorded custom rhythm slots.
+- 30 built-in rhythms plus 10 custom slots. A slot can start from a tap
+  recording or a copy of any built-in, then be renamed and re-tuned — no
+  rhythm is fixed forever.
 - Custom rhythms are saved durably and can be backed up to SD.
 - SD logs use `/log/YYYY-MM-DD/YYYY-MM-DD.log`.
 

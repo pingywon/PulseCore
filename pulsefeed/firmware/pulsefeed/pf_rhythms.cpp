@@ -46,6 +46,13 @@ const BuiltinDef kBuiltins[kBuiltinCount] = {
   { "Ramp Up",        ". . . - . . - - -"   },
   { "Long Draw",      "- - .   - - ."       },
   { "Gentle",         ".   .   .   ."       },
+  // --- added in 2.2, for bench-testing CH2 timing/feel -------------
+  { "Fast Flutter",   ". . . . . . . . . ." },
+  { "Slow Drip",      "-   -   -   -"       },
+  { "Uneven",         ". - . . -   . - ."   },
+  { "Pyramid",        ". . - - - . ."       },
+  { "Micro Burst",    ". . .   . . .   . ." },
+  { "Long Hold",      "- - - -   - - - -"   },
 };
 
 }  // namespace

@@ -133,14 +133,14 @@ border-radius:var(--r);padding:12px 14px;margin-bottom:var(--sp);font-weight:700
     <div class="spacer"></div>
     <span class="chip" id="cRun">--</span>
     <span class="chip" id="cNet">--</span>
-    <button class="estop" onclick="ctl('estop')">E-STOP</button>
+    <button class="estop" onclick="estop()">E-STOP</button>
   </div>
 </header>
 
 <main>
   <div id="estopBanner" class="banner hide">
     E-STOP latched &mdash; all channels de-energised.
-    <button class="b" style="margin-left:10px;min-height:34px" onclick="ctl('clear')">CLEAR E-STOP</button>
+    <button class="b" style="margin-left:10px;min-height:34px" onclick="ctl('clear',true)">CLEAR E-STOP</button>
   </div>
 
   <div class="grid">
@@ -220,13 +220,18 @@ border-radius:var(--r);padding:12px 14px;margin-bottom:var(--sp);font-weight:700
 
     <!-- recorder -->
     <section class="card span2">
-      <h2>Tap recorder</h2>
-      <p class="sub" style="margin-top:-4px">Record a pattern by tapping. Press and hold for a
-         long pulse; the gaps between taps are captured too.</p>
+      <h2>Custom slots &mdash; adjustable</h2>
+      <p class="sub" style="margin-top:-4px">10 slots, each starts from a tap-recorded pattern
+         or a copy of any preset below. Rename, re-tap or re-copy over it, tune with the
+         Rhythms card's Speed slider, then save &mdash; nothing here is fixed.</p>
       <div class="row" style="margin-top:8px">
         <select id="cSlot" style="flex:2 1 160px"></select>
         <input id="cName" type="text" maxlength="20" placeholder="Slot name" style="flex:2 1 160px">
         <button class="b" onclick="custom('rename')" style="flex:1 1 110px">RENAME</button>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <select id="cFrom" style="flex:2 1 160px"></select>
+        <button class="b" onclick="seedSlot()" style="flex:1 1 150px">COPY TO SLOT</button>
       </div>
       <div class="row" style="margin-top:8px">
         <button class="b a" id="armBtn" onclick="toggleArm()">ARM</button>
@@ -291,19 +296,64 @@ const $=i=>document.getElementById(i);
 let TOK=localStorage.getItem('pf_tok')||'';
 let META=null, ST=null, busy=0, pending={};
 
-/* ---------------- transport ---------------- */
+/* ---------------- transport ----------------
+   The device has exactly one TCP connection slot -- the ESP32 WebServer
+   handles one client fully before it will accept the next, there is no
+   concurrency underneath this. A naive client (setInterval polling +
+   independent fire-and-forget posts) opens several requests at once,
+   which just queue up in an order the client never chose. That is what
+   "the page hangs, then a burst of stale state lands at once" was:
+   requests backing up, being served late, in whatever order they
+   happened to queue in -- with E-STOP stuck in that same line behind a
+   stale poll.
+
+   Everything below goes through one FIFO with exactly one request on
+   the wire at a time, so the browser's idea of "in flight" matches the
+   device's. E-STOP clears the line and jumps it. */
+let inFlight=null;         // AbortController for the request currently on the wire
+const REQ_TIMEOUT_MS=4000; // a wedged request must not wedge the queue behind it
+const queue=[];            // [{url,opts,dedupeKey,resolve,reject}]
+
+function enqueue(url,opts,priority,dedupeKey){
+  return new Promise((resolve,reject)=>{
+    const job={url,opts:opts||{},dedupeKey,resolve,reject};
+    if(dedupeKey){
+      const i=queue.findIndex(j=>j.dedupeKey===dedupeKey);
+      if(i>=0){queue[i]=job; pump(); return}
+    }
+    if(priority) queue.unshift(job); else queue.push(job);
+    pump();
+  });
+}
+function pump(){
+  if(inFlight||!queue.length) return;
+  const job=queue.shift();
+  const ac=new AbortController();
+  inFlight=ac;
+  const t=setTimeout(()=>ac.abort(),REQ_TIMEOUT_MS);
+  fetch(job.url,Object.assign({cache:'no-store',signal:ac.signal},job.opts))
+    .then(r=>{clearTimeout(t);job.resolve(r)},e=>{clearTimeout(t);job.reject(e)})
+    .finally(()=>{inFlight=null;pump()});
+}
+// Drop whatever's queued and free the wire right now. A slider drag from
+// a second ago or a stale poll is not worth serving after this.
+function priorityClear(){queue.length=0;if(inFlight)inFlight.abort()}
+
 function hdrs(extra){const h=Object.assign({},extra||{});if(TOK)h['X-PF-Token']=TOK;return h}
 
-async function get(url){
-  const r=await fetch(url,{cache:'no-store',headers:hdrs()});
+async function req(url,opts,priority,dedupeKey){
+  const r=await enqueue(url,opts,priority,dedupeKey);
   if(r.status===401){logout();throw new Error('auth')}
+  return r;
+}
+async function get(url,priority,dedupeKey){
+  const r=await req(url,{headers:hdrs()},priority,dedupeKey);
   return r.json();
 }
-async function post(url,obj){
+async function post(url,obj,priority){
   const body=new URLSearchParams(obj||{}).toString();
-  const r=await fetch(url,{method:'POST',cache:'no-store',
-    headers:hdrs({'Content-Type':'application/x-www-form-urlencoded'}),body});
-  if(r.status===401){logout();throw new Error('auth')}
+  const r=await req(url,{method:'POST',
+    headers:hdrs({'Content-Type':'application/x-www-form-urlencoded'}),body},priority);
   const j=await r.json().catch(()=>({}));
   if(!r.ok) toast(j.error||('error '+r.status));
   return j;
@@ -336,9 +386,13 @@ async function doLogin(){
 $('pin').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
 
 /* ---------------- controls ---------------- */
-const ctl=a=>post('/api/v1/control',{action:a}).then(poll);
+const ctl=(a,priority)=>post('/api/v1/control',{action:a},priority).then(poll);
 const sys=a=>post('/api/v1/system',{action:a}).then(()=>{if(a!=='reboot')poll()});
 const toggleRun=()=>ctl(ST&&ST.running?'stop':'start');
+
+// The one action that must never be stuck behind a stale poll or a
+// slider drag: drop the line, free the wire, then go.
+function estop(){priorityClear();return ctl('estop',true)}
 
 /* Slider writes are coalesced: dragging a range emits an event per
    pixel, and firing an HTTP request per pixel is how you make an
@@ -379,6 +433,8 @@ function slot(){return +($('cSlot').value||1)}
 function custom(action){return post('/api/v1/custom',
   {slot:slot(),action,name:$('cName').value}).then(poll)}
 function toggleArm(){custom(ST&&ST.recording?'stop':'arm')}
+function seedSlot(){return post('/api/v1/custom',
+  {slot:slot(),action:'seed',from:+$('cFrom').value}).then(poll)}
 (function(){
   const pad=$('tapPad');
   const dn=e=>{e.preventDefault();post('/api/v1/custom',{slot:slot(),action:'down'})};
@@ -449,6 +505,12 @@ function fillRhythms(){
   META.rhythms.forEach(r=>add(r.id,r.id+' — '+r.name+'   '+r.dots));
   (ST?ST.slots:[]).forEach((s,i)=>add(s.id,s.id+' — '+s.name+(s.valid?'   [custom]':'   [empty]')));
   sel.value=keep;
+
+  const from=$('cFrom');
+  if(!from.options.length){
+    META.rhythms.forEach(r=>{const o=document.createElement('option');
+      o.value=r.id;o.textContent=r.name+'   '+r.dots;from.appendChild(o)});
+  }
 }
 
 function render(s){
@@ -516,12 +578,23 @@ function render(s){
   drawWave();
 }
 
-/* ---------------- loop ---------------- */
-let failures=0;
+/* ---------------- loop ----------------
+   Was setInterval(poll,1000): if a round trip ran long the next tick
+   fired anyway, so a slow device accumulated a backlog of state
+   requests that all landed in a burst once it caught up. Chaining a
+   timeout off the PREVIOUS request's completion means at most one state
+   request is ever outstanding, and the effective rate adapts to
+   whatever the link can actually sustain instead of assuming 1 Hz. */
+const POLL_DELAY_MS=200;
+let failures=0, pollTimer=null;
 async function poll(){
-  try{ render(await get('/api/v1/state')); failures=0; }
+  try{ render(await get('/api/v1/state',false,'state')); failures=0; }
   catch(e){ if(++failures===3)toast('Lost contact with the controller'); }
 }
+function pollLoop(){
+  poll().finally(()=>{ pollTimer=setTimeout(pollLoop,POLL_DELAY_MS) });
+}
+function startPolling(){ clearTimeout(pollTimer); pollLoop() }
 
 async function loadLogs(){
   try{
@@ -543,8 +616,7 @@ async function boot(){
   await poll();
   fillRhythms();
   loadLogs();
-  clearInterval(window._t);
-  window._t=setInterval(poll,1000);
+  startPolling();
 }
 
 (async function(){

@@ -377,4 +377,30 @@ bool cmdRenameSlot(int slot, const char* name) {
   return true;
 }
 
+// Copies a built-in preset's compiled timing into a custom slot as CSV,
+// so it can be adjusted with the same tools a tap-recorded rhythm gets
+// (rename, re-tap over it, speed, save) instead of being fixed forever.
+bool cmdSeedSlot(int slot, int builtinId, const char* src) {
+  if (slot < 0 || slot >= Limits::kRhythmSlots) return false;
+  if (!isBuiltin(builtinId)) return false;
+
+  RhythmPattern tmp;
+  if (!tmp.compileDots(builtinDots(builtinId), 250)) return false;
+  tmp.toCsv(app.custom[slot].data, sizeof(app.custom[slot].data));
+
+  char nm[Limits::kRhythmNameLen];
+  snprintf(nm, sizeof(nm), "%s+", builtinName(builtinId));
+  cmdRenameSlot(slot, nm);
+
+  if (!recompileCustom(slot)) {
+    setStatus("Copy failed");
+    return false;
+  }
+  markSettingsDirty();
+  saveSettingsNow(src);
+  setStatus("Preset copied to slot - now adjustable");
+  logEvent("rec-seed", src);
+  return true;
+}
+
 }  // namespace pf

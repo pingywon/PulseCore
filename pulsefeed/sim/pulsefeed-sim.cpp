@@ -457,6 +457,21 @@ void handle(int fd, Req& r) {
       if (!g_customs[slot].valid()) g_status = "That custom slot is empty";
       else { g_set.rhythmId = kCustomBase + slot; applySettings(); }
     }
+    else if (a == "seed") {
+      int from = argInt(r, "from", 0);
+      RhythmPattern tmp;
+      if (!isBuiltin(from) || !tmp.compileDots(builtinDots(from), 250)) {
+        send(fd, 400, "application/json", errJson("bad_source")); return;
+      }
+      char csv[Limits::kRhythmDataLen];
+      tmp.toCsv(csv, sizeof(csv));
+      g_slots[slot].data = csv;
+      char nm[Limits::kRhythmNameLen];
+      snprintf(nm, sizeof(nm), "%s+", builtinName(from));
+      g_slots[slot].name = nm;
+      if (!recompile(slot)) { send(fd, 400, "application/json", errJson("bad_source")); return; }
+      g_status = "Preset copied to slot - now adjustable";
+    }
     send(fd, 200, "application/json", okJson());
     return;
   }

@@ -387,7 +387,7 @@ that number for your hardware instead of guessing it. It reports a suggested
 floor rather than writing it, because v2.0 has no `pumpFloor` field yet -- that
 arrives with the v3 cadence core.
 
-**DEMO** walks all 24 built-in rhythms on CH2 only, with Milky reacting. No
+**DEMO** walks all 30 built-in rhythms on CH2 only, with Milky reacting. No
 vacuum, no motor, nothing to set up.
 
 Direct pin control is fenced: it refuses to start while a session is running,

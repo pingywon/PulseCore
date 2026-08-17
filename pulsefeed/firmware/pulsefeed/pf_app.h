@@ -101,6 +101,7 @@ void cmdRecordStop();
 bool cmdRecordSave(int slot, const char* src);
 bool cmdRecordClear(int slot, const char* src);
 bool cmdRenameSlot(int slot, const char* name);
+bool cmdSeedSlot(int slot, int builtinId, const char* src);
 bool recompileCustom(int slot);
 
 // Persistence
