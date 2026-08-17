@@ -1,27 +1,31 @@
-# PulseCore / Pluto 9000
+# PulseCore / Pluto 9000 — `testing/v44`
 
-Software archive for the PulseCore / Pluto 9000 CoreS3 project.
+> **Testing / diagnostic branch.** This is line **v44** (PulseFeed **2.4.0**).
+> `main` carries 43, the current/stable firmware. See
+> [VERSIONS.md](VERSIONS.md) for the version map and the branch rule
+> (`N = 40 + semver minor`, enforced at build time).
+>
+> Not verified on real hardware beyond a first crash-fix pass — treat every
+> build from this branch as diagnostic until it has been flashed and driven.
 
-## Active firmware — PulseFeed 2.x
+## Firmware on this branch — PulseFeed 2.4.0
 
-`pulsefeed/` — the current, actively developed controller. Version `2.1.0`.
-
-A full audit and reconstruction of the v43 sketch: the engine core is
-Arduino-free C++ so `pulsefeed/tests/` and `pulsefeed/sim/` link the exact same
-`pf_core.cpp` the firmware does (89 host tests). Adds service/test modes, the
-Milky mascot on-device, motor soft start, a deadman timer and a run limit.
+`pulsefeed/` — a full audit and reconstruction of the v43 sketch. The engine
+core is Arduino-free C++ so `pulsefeed/tests/` and `pulsefeed/sim/` link the
+exact same `pf_core.cpp` the firmware does (89 host tests). Adds a web
+dashboard as the primary control surface, service/test modes including a PPM
+pin test, motor soft start, a deadman timer and a run limit.
 
 Build with `cd pulsefeed && tools/build.sh package`.
 
-## Archived firmware
+## Where 43 lives
 
-Last of the original numbered line:
 `software/43_Pulse_CoreS3_WebCustomRhythms_SDLog_CompileCheck/`
-(`v43-web-custom-rhythms-sdlog-compilecheck`).
+(`v43-web-custom-rhythms-sdlog-compilecheck`) — carried on this branch too, for
+diffing against the reconstruction. It is the current firmware on `main`.
 
-Kept for reference and for diffing against the 2.x reconstruction — note that
-v43 does not link as shipped (`changeRhythmSpeed(int)` is declared and called
-but never defined). Versions 28–42 are not archived here.
+Note that v43 does not link as shipped (`changeRhythmSpeed(int)` is declared
+and called but never defined). Versions 28–42 are not archived here.
 
 ## Mascot and diagram source art
 
