@@ -196,6 +196,11 @@ static void card(int x, int y, int w, int h, uint16_t fill) {
 }
 
 static void label(const char* s, int x, int y, uint16_t col, const lgfx::IFont* f, textdatum_t d = textdatum_t::middle_center) {
+  // Every string on this display funnels through here, including ones
+  // that come from lookup tables and live slot data. A NULL reaching
+  // drawString() is a hard fault, which is a bad way to find out a table
+  // has a hole in it -- draw nothing and keep the UI alive instead.
+  if (!s) return;
   gfx()->setFont(f);
   gfx()->setTextDatum(d);
   gfx()->setTextColor(col);
