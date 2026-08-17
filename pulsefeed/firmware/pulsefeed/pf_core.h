@@ -25,7 +25,7 @@ namespace pf {
 // ------------------------------------------------------------------ //
 //  Identity
 // ------------------------------------------------------------------ //
-static const char* const kVersion   = "2.2.1";
+static const char* const kVersion   = "2.3.0";
 static const char* const kProduct   = "PulseFeed";
 static const char* const kModel     = "Pluto 9000";
 static const char* const kApiLevel  = "1";

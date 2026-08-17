@@ -1,5 +1,37 @@
 # Changelog
 
+## 2.3.0 -- Rhythms card redesigned as a tap-card grid
+
+### Changed
+- Superseded 2.2.1's PREV/NEXT/PLAY-STOP button row. Owner: every rhythm
+  needs to be its own large touchable card -- gloved, wet, full, or dirty
+  hands in a pasture, read on an iPad in direct sun. One tap now plays a
+  pattern immediately; there is no browsing step at all.
+- All 41 selectable ids (Off, 30 builtins, 10 custom slots) render as
+  fixed-once cards in a responsive grid
+  (`grid-template-columns:repeat(auto-fill,minmax(132px,1fr))`, ~92px min
+  height). Currently-playing card gets a solid highlight + glow, not just
+  an outline, so it reads from a glance. Empty custom slots are dimmed and
+  unclickable; they re-enable live once a recording is saved into them,
+  no page reload.
+- Tapping a card highlights it *synchronously*, before the network
+  request is even sent -- a tap must feel instant regardless of link
+  quality, not "instant once the round trip finishes." The next state
+  poll reconciles for real, so a rejected id self-corrects within one
+  tick rather than staying stuck on a wrong optimistic state.
+- Speed is a large vertical slider (`writing-mode:vertical-lr`, 44px
+  thumb) beside the grid instead of a stepper -- a real drag gesture,
+  sized for a glove, not two small buttons.
+- Verified against the actual production `boot()`/`render()`/`setRhythm()`
+  code (not just read): a jsdom harness drove the real page through a
+  real boot cycle against the simulator's live meta/state JSON -- card
+  count, active-card sync, empty/valid slot classes and click-binding,
+  and the optimistic-highlight timing all confirmed against actual
+  execution, zero `window.onerror` events. The CSS vertical slider's
+  actual on-screen rendering is unverified -- no browser was available in
+  this session to look at it; jsdom confirms the layout computes
+  (flex/centered) but doesn't rasterize the `writing-mode` transform.
+
 ## 2.2.1 -- big touch buttons on the dashboard's Rhythms card
 
 ### Changed
